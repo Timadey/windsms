@@ -1,0 +1,179 @@
+/* Base */
+body,
+body *:not(html):not(style):not(br):not(tr):not(code) {
+    box-sizing: border-box;
+    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    position: relative;
+}
+
+body {
+    background-color: #f5f9ff;
+    color: #334155;
+    height: 100%;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    width: 100% !important;
+}
+
+a {
+    color: #0284c7;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Typography */
+h1, h2, h3 {
+    color: #0f172a;
+    font-weight: 700;
+    margin-top: 0;
+    text-align: left;
+}
+
+h1 { font-size: 22px; }
+h2 { font-size: 18px; }
+h3 { font-size: 16px; }
+
+p {
+    font-size: 15px;
+    color: #334155;
+    line-height: 1.7em;
+    margin-top: 0;
+    text-align: left;
+}
+
+p.sub {
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* Layout */
+.wrapper {
+    background: linear-gradient(180deg, #e0f2fe 0%, #f8fafc 100%);
+    padding: 0;
+    width: 100%;
+}
+
+.content {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header */
+.header {
+    padding: 40px 0 20px 0;
+    text-align: center;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.header img {
+    height: 60px;
+    width: auto;
+}
+
+.header a {
+    color: #0284c7;
+    font-weight: 700;
+    font-size: 20px;
+}
+
+/* Body */
+.body {
+    background-color: #f5f9ff;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.inner-body {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.05);
+    margin: 40px auto;
+    padding: 0;
+    width: 600px;
+}
+
+.content-cell {
+    padding: 40px;
+}
+
+/* Buttons */
+.button {
+    border-radius: 6px;
+    color: #ffffff !important;
+    display: inline-block;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.button-primary {
+    background: linear-gradient(90deg, #0284c7, #0ea5e9);
+    border: none;
+    padding: 12px 24px;
+}
+
+.button-primary:hover {
+    background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+}
+
+.button-success {
+    background: #22c55e;
+    padding: 12px 24px;
+}
+
+.button-error {
+    background: #ef4444;
+    padding: 12px 24px;
+}
+
+/* Panels */
+.panel {
+    border-left: 4px solid #0284c7;
+    margin: 24px 0;
+}
+
+.panel-content {
+    background-color: #f1f5f9;
+    color: #475569;
+    padding: 18px;
+    border-radius: 6px;
+}
+
+/* Subcopy */
+.subcopy {
+    border-top: 1px solid #e2e8f0;
+    margin-top: 32px;
+    padding-top: 24px;
+}
+
+.subcopy p {
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 13px;
+    margin: 20px auto 40px;
+    width: 600px;
+}
+
+.footer a {
+    color: #0284c7;
+    text-decoration: underline;
+}
+
+/* Utilities */
+.break-all {
+    word-break: break-all;
+}
