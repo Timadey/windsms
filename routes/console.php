@@ -9,5 +9,6 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::job(RetryPendingSmsJob::class)->everyMinute();
-Schedule::command('sms:ping')->everyThirtySeconds();
+Schedule::command('sms:retry-pending')->everyMinute()->withoutOverlapping()->name('sms:retry-pending');
+Schedule::command('sms:ping')->everyThirtySeconds()->withoutOverlapping()->name('sms:ping');
+Schedule::command('campaigns:process-recurring')->everyMinute()->withoutOverlapping()->name('campaigns:process-recurring');

@@ -77,8 +77,11 @@
     --secondary: oklch(0.65 0.18 190); /* Soft Teal */
     --secondary-foreground: oklch(0.98 0.01 240);
 
-    --accent: oklch(0.68 0.19 170); /* Teal Green */
-    --accent-foreground: var(--foreground);
+    --accent: oklch(0.65 0.18 190); /* Soft Teal */
+    --accent-foreground: oklch(0.98 0.01 240);
+
+    /*--accent: oklch(0.68 0.19 170); !* Teal Green *!*/
+    /*--accent-foreground: var(--foreground);*/
 
     /* --- SUPPORT COLORS --- */
     --muted: oklch(0.94 0.02 250);
@@ -237,3 +240,20 @@
         @apply bg-background text-foreground;
     }
 }
+
+@keyframes wave {
+    0% { transform: rotate(0deg); }
+    15% { transform: rotate(14deg); }
+    30% { transform: rotate(-8deg); }
+    40% { transform: rotate(14deg); }
+    50% { transform: rotate(-4deg); }
+    60% { transform: rotate(10deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.wave-emoji {
+    display: inline-block;
+    transform-origin: 70% 70%;
+    animation: wave 2s;
+}
+

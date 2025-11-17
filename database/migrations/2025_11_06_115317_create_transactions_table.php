@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('status')->default('pending'); // pending, completed, failed
             $table->string('payment_method'); // card, wallet, bank_transfer
             $table->string('reference')->unique();
+            $table->json('metadata')->nullable();
             $table->timestamps();
 
             $table->index(['user_id', 'created_at']);

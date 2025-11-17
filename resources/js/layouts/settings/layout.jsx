@@ -8,6 +8,7 @@ import { show } from '@/routes/two-factor';
 import { edit as editPassword } from '@/routes/user-password';
 import { Link } from '@inertiajs/react';
 import { subscription } from '@/routes/account-billing';
+import billing from '../../routes/billing/index.ts';
 
 const sidebarNavItems = [
     {
@@ -27,7 +28,7 @@ const sidebarNavItems = [
     },
     {
         title: 'Subscription',
-        href: subscription(),
+        href: billing.index().url,
         icon: null,
     },
     {

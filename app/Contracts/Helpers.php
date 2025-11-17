@@ -1,4 +1,23 @@
 <?php
+use Illuminate\Http\Request;
+
+if (!function_exists('get_request_ip')) {
+    function get_request_ip(Request $request): array|string|null
+    {
+        $forwarded = $request->header('x-forwarded-for');
+        $realIp = $request->header('x-real-ip');
+
+        if ($forwarded) {
+            $ip = explode(',', $forwarded)[0]; // get first IP in list
+        } elseif ($realIp) {
+            $ip = $realIp;
+        } else {
+            $ip = $request->ip();
+        }
+        return $ip;
+    }
+}
+
 
 /**
  * General Conversions for phone numbers

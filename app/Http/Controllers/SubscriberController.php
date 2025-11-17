@@ -42,22 +42,38 @@ class SubscriberController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'phone_number' => 'required|min:11|max:11|string|unique:subscribers',
+            'phone_number' => 'required|array',
+            'phone_number.*' => 'required|min:11|max:11|string|distinct',
             'name' => 'nullable|string|max:255',
             'tag_ids' => 'nullable|array',
             'tag_ids.*' => 'exists:tags,id',
         ]);
 
-        $subscriber = Subscriber::create([
-            'user_id' => $request->user()->id,
-            'phone_number' => formatPhoneNumber($validated['phone_number']),
-            'name' => $validated['name'] ?? null,
-        ]);
+        $phoneNumbers = $validated['phone_number'];
+        $tagIds = $validated['tag_ids'];
 
-        if (!empty($validated['tag_ids'])) {
-            $subscriber->tags()->sync($validated['tag_ids']);
+        if (count($phoneNumbers) > 1){
+            foreach ($phoneNumbers as $phoneNumber) {
+                $formatedPhoneNumber = formatPhoneNumber($phoneNumber);
+                // if length is not 10, continue
+                if (strlen($formatedPhoneNumber) != 11) continue;
+                $subscriber = Subscriber::updateOrCreate(['phone_number' => $formatedPhoneNumber, 'user_id' => $request->user()->id]);
+                if (!empty($tagIds)) {
+                    $subscriber->tags()->sync($tagIds, false);
+                }
+            }
+        }else{
+            $phone = $phoneNumbers[0];
+            $subscriber = Subscriber::updateOrCreate([
+                'user_id' => $request->user()->id,
+                'phone_number' => formatPhoneNumber($phone)
+            ], [
+                'name' => $validated['name'] ?? null
+            ]);
+            if (!empty($validated['tag_ids'])) {
+                $subscriber->tags()->sync($validated['tag_ids'], false);
+            }
         }
-
         return redirect()->back()->with('success', 'Subscriber added successfully.');
     }
 

@@ -35,7 +35,7 @@ export default function BillingIndex({
 
     const getPlanDetails = (planName) => {
         const details = {
-            'starter': { title: 'Starter', subtitle: 'Individuals, Micro Businesses', price: 3000, sms: 610 },
+            'free': { title: 'Free', subtitle: 'Individuals, Micro Businesses', price: 3000, sms: 610 },
             'pro': { title: 'Pro', subtitle: 'SMEs, Marketers', price: 5000, sms: 1050, popular: true },
             'business': { title: 'Business', subtitle: 'High-volume Businesses', price: 10000, sms: 2200 },
             'enterprise': { title: 'Enterprise', subtitle: 'Agencies, Enterprises', price: 20000, sms: 4600 },

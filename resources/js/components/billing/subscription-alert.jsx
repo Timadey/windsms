@@ -1,57 +1,57 @@
-import { Card, CardContent } from '../ui/card.jsx';
-import { AlertTriangle } from 'lucide-react';
-import { Button } from '../ui/button.jsx';
+import BillingAlert from './billing-alert.jsx';
+import billing from '../../routes/billing/index.ts';
 
-export function AlertBanners({ currentSubscription, onRenew }) {
-    const isExpiringSoon =
-        currentSubscription?.is_active &&
-        currentSubscription?.days_remaining <= 7;
-    if (!currentSubscription || !currentSubscription.is_active) {
-        return (
-            <Card className="border-red-500 bg-red-50">
-                <CardContent className="pt-6">
-                    <div className="flex items-start gap-3">
-                        <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
-                        <div className="flex-1">
-                            <h3 className="font-semibold text-red-900">
-                                No Active Subscription
-                            </h3>
-                            <p className="mt-1 text-sm text-red-700">
-                                Subscribe to a plan below to start sending
-                                campaigns and accessing all features.
-                            </p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        );
+export function AlertBanners({ normalizedSubscription, smsBalance }) {
+    const isSubscriptionExpiringSoon =
+        normalizedSubscription?.is_active &&
+        normalizedSubscription.days_remaining <= 7;
+
+    const hasLowBalance = smsBalance < 100;
+
+    const alerts = [];
+    // TODO: HIDE THIS ACTION URLS IF URL IS ALREADY AT BILLING INDEX
+    // No active subscription
+    if (!normalizedSubscription || !normalizedSubscription.is_active) {
+        alerts.push({
+            variant: 'error',
+            title: 'No Active Subscription',
+            message:
+                'You need an active subscription to send SMS campaigns. Subscribe to a plan to get started.',
+            actionText: 'View Plans',
+            actionUrl: billing.index().url,
+        });
     }
 
-    if (isExpiringSoon) {
-        return (
-            <Card className="border-orange-500 bg-orange-50">
-                <CardContent className="pt-6">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3">
-                            <AlertTriangle className="mt-0.5 h-5 w-5 text-orange-600" />
-                            <div>
-                                <h3 className="font-semibold text-orange-900">
-                                    Subscription Expiring Soon
-                                </h3>
-                                <p className="mt-1 text-sm text-orange-700">
-                                    Your subscription expires in{' '}
-                                    {currentSubscription.days_remaining} days.
-                                    Renew now to continue service.
-                                </p>
-                            </div>
-                        </div>
-                        <Button size="sm" onClick={onRenew}>
-                            Renew Now
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-        );
+    // Subscription expiring soon
+    if (isSubscriptionExpiringSoon) {
+        alerts.push({
+            variant: 'warning',
+            title: 'Subscription Expiring Soon',
+            message: `Your subscription expires in ${normalizedSubscription.days_remaining} days. Renew now to avoid service interruption.`,
+            actionText: 'Renew Subscription',
+            actionUrl: billing.index().url,
+        });
     }
-    return null;
+
+    // Low SMS balance
+    if (hasLowBalance && normalizedSubscription?.is_active) {
+        alerts.push({
+            variant: 'attention',
+            title: 'Low SMS Balance',
+            message: `You have only ${smsBalance} SMS units remaining. Purchase more to continue sending sms.`,
+            actionText: 'Buy SMS Units',
+            actionUrl: billing.index().url,
+        });
+    }
+
+    // If there are no alerts, return nothing
+    if (alerts.length === 0) return null;
+
+    return (
+        <div className="space-y-4">
+            {alerts.map((alert, i) => (
+                <BillingAlert key={i} {...alert} />
+            ))}
+        </div>
+    );
 }

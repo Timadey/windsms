@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
 import { AlertCircle, Check, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import billing from '../../routes/billing/index.ts';
 
 export default function SubscribePlanDialog({ open, onOpenChange, plan }) {
     const [uPlan] = useState(plan);
@@ -32,7 +33,7 @@ export default function SubscribePlanDialog({ open, onOpenChange, plan }) {
 
     if (!plan) return null;
 
-    console.log(plan);
+    // console.log(plan);
 
     const smsFeature = plan.features?.find((f) => f.name === 'sms-units');
     const baseSmsUnits = smsFeature?.charges || 0;
@@ -52,7 +53,7 @@ export default function SubscribePlanDialog({ open, onOpenChange, plan }) {
     };
 
     const handleSubmit = () => {
-        form.post('/billing/subscribe', {
+        form.post(billing.subscribe().url, {
             onSuccess: () => {
                 handleClose();
             },

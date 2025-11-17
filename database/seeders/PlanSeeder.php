@@ -16,11 +16,10 @@ class PlanSeeder extends Seeder
     public function run(): void
     {
         // PLANS
-        $starter = Plan::create([
-            'name'             => 'starter',
-            'periodicity_type' => PeriodicityType::Month,
-            'periodicity'      => 1,
-            'grace_days'       => 7,
+        $free = Plan::create([
+            'name'             => 'free',
+            'periodicity_type' => null,
+            'periodicity'      => null,
         ]);
 
         $pro = Plan::create([
@@ -42,13 +41,6 @@ class PlanSeeder extends Seeder
             'periodicity_type' => PeriodicityType::Month,
             'periodicity'      => 1,
             'grace_days'       => 7,
-        ]);
-
-        $starterYearly = Plan::create([
-            'name'             => 'starter-yearly',
-            'periodicity_type' => PeriodicityType::Year,
-            'periodicity'      => 1,
-            'grace_days'       => 14,
         ]);
 
         $proYearly = Plan::create([
@@ -82,8 +74,8 @@ class PlanSeeder extends Seeder
             'periodicity'      => 1,
         ]);
 
-        $starter->features()->attach($smsUnit, ['charges' => 610 ]);
-        $starterYearly->features()->attach($smsUnit, ['charges' => 610 ]);
+        $free->features()->attach($smsUnit, ['charges' => 10 ]);
+        // $freeYearly->features()->attach($smsUnit, ['charges' => 610 ]);
         $pro->features()->attach($smsUnit, ['charges' => 1050 ]);
         $proYearly->features()->attach($smsUnit, ['charges' => 1050 ]);
         $business->features()->attach($smsUnit, ['charges' => 2200 ]);
@@ -121,9 +113,9 @@ class PlanSeeder extends Seeder
             'periodicity'      => 1,
         ]);
 
-        $starter->features()->attach($contacts, ['charges' => 5000 ]);
-        $starterYearly->features()->attach($contacts, ['charges' => 5000 ]);
-        $pro->features()->attach($contacts, ['charges' => 300000 ]);
+        $free->features()->attach($contacts, ['charges' => 300000 ]);
+        // $freeYearly->features()->attach($contacts, ['charges' => 5000 ]);
+        $pro->features()->attach($contacts, ['charges' => 1000000 ]);
         $proYearly->features()->attach($contacts, ['charges' => 300000 ]);
         $business->features()->attach($contacts, ['charges' => 2000000 ]);
         $businessYearly->features()->attach($contacts, ['charges' => 2000000 ]);
@@ -136,8 +128,8 @@ class PlanSeeder extends Seeder
             'quota'      => true,
         ]);
 
-        $starter->features()->attach($senderId, ['charges' => 1 ]);
-        $starterYearly->features()->attach($senderId, ['charges' => 1 ]);
+        $free->features()->attach($senderId, ['charges' => 1 ]);
+        // $freeYearly->features()->attach($senderId, ['charges' => 1 ]);
         $pro->features()->attach($senderId, ['charges' => 3 ]);
         $proYearly->features()->attach($senderId, ['charges' => 3 ]);
         $business->features()->attach($senderId, ['charges' => 7 ]);
@@ -151,8 +143,8 @@ class PlanSeeder extends Seeder
             'quota'      => true,
         ]);
 
-        $starter->features()->attach($tags, ['charges' => 5 ]);
-        $starterYearly->features()->attach($tags, ['charges' => 5 ]);
+        $free->features()->attach($tags, ['charges' => 5 ]);
+        // $freeYearly->features()->attach($tags, ['charges' => 5 ]);
         $pro->features()->attach($tags, ['charges' => 20 ]);
         $proYearly->features()->attach($tags, ['charges' => 20 ]);
         $business->features()->attach($tags, ['charges' => 200000 ]);

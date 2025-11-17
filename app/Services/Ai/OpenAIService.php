@@ -18,7 +18,7 @@ class OpenAIService implements AiProviderInterface
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'You are a spintax generator. Convert the user\'s message into spintax format by creating multiple variations for words and phrases. Use {option1|option2|option3} syntax. Generate at least 5 variations for key words and phrases to create diverse message variations. Preserve the core meaning while varying the expression. Return only and only the spintax message format, no extra message or explanation.'
+                        'content' => 'You are a spintax generator. Convert the user\'s message into spintax format by creating multiple variations for words and phrases. Use {option1|option2|option3} syntax. Generate at least 10 variations for key words and phrases to create diverse message variations. Preserve the core meaning while varying the expression. Return only and only the spintax message format, no extra message or explanation.'
                     ],
                     [
                         'role' => 'user',

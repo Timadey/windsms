@@ -10,6 +10,7 @@ class CampaignLog extends Model
     protected $fillable = [
         'campaign_id',
         'subscriber_id',
+        'phone_number', // New field
         'message_sent',
         'status',
         'error_message',
@@ -25,9 +26,6 @@ class CampaignLog extends Model
         'response_data' => 'array',
     ];
 
-    /**
-     * Scopes
-     */
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
@@ -48,9 +46,6 @@ class CampaignLog extends Model
             ->where('retry_count', '<', $maxRetries);
     }
 
-    /**
-     * Relationships
-     */
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class);
@@ -62,8 +57,13 @@ class CampaignLog extends Model
     }
 
     /**
-     * Accessors
+     * Get the display phone number (from subscriber or manual entry)
      */
+    public function getDisplayPhoneNumberAttribute(): string
+    {
+        return $this->phone_number ?? $this->subscriber?->phone_number ?? 'Unknown';
+    }
+
     public function getIsRetryableAttribute(): bool
     {
         return $this->status === 'pending' && $this->retry_count < 5;

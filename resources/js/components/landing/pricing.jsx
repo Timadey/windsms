@@ -6,10 +6,10 @@ export default function Pricing() {
 
     const plans = [
         {
-            name: 'Starter',
+            name: 'Free',
             icon: <Send className="h-6 w-6 text-sky-600" />,
-            price: 3000,
-            units: 610,
+            price: 0,
+            units: 10,
             extraCost: 5.0,
             profit: 1.0,
             expiry: 'Strict (No Rollover)',
@@ -21,7 +21,7 @@ export default function Pricing() {
                 analytics: true,
                 mixer: false,
                 api: false,
-                monthlyContacts: '5k',
+                monthlyContacts: '300k',
                 senderId: '1',
                 tags: 5,
                 referralBonus: '1×',
@@ -32,7 +32,7 @@ export default function Pricing() {
         {
             name: 'Pro',
             icon: <Zap className="h-6 w-6 text-sky-600" />,
-            price: 5000,
+            price: 4998.98,
             units: 1050,
             extraCost: 4.95,
             profit: 1.0,
@@ -45,7 +45,7 @@ export default function Pricing() {
                 analytics: true,
                 mixer: false,
                 api: false,
-                monthlyContacts: '300k',
+                monthlyContacts: '1M',
                 senderId: 3,
                 tags: 20,
                 referralBonus: '1.5×',
@@ -57,7 +57,7 @@ export default function Pricing() {
         {
             name: 'Business',
             icon: <Rocket className="h-6 w-6 text-sky-600" />,
-            price: 10000,
+            price: 9997.99,
             units: 2200,
             extraCost: 4.8,
             profit: 1.0,
@@ -81,7 +81,7 @@ export default function Pricing() {
         {
             name: 'Enterprise',
             icon: <Building2 className="h-6 w-6 text-sky-600" />,
-            price: 20000,
+            price: 19995.99,
             units: 4600,
             extraCost: 4.7,
             profit: 1.15,
@@ -155,7 +155,7 @@ export default function Pricing() {
                         onClick={() => setBillingCycle('yearly')}
                     >
                         Yearly{' '}
-                        <span className="text-xs text-sky-500">(save 20%)</span>
+                        <span className="text-xs text-sky-500">(save 15%)</span>
                     </span>
                 </div>
 
@@ -192,7 +192,7 @@ export default function Pricing() {
                                     {(
                                         plan.price *
                                         (billingCycle === 'yearly'
-                                            ? 12 * 0.8
+                                            ? 12 * 0.85
                                             : 1)
                                     ).toLocaleString()}
                                 </span>

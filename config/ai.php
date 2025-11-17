@@ -8,6 +8,9 @@ return [
         'cohere' => [
             'api_key' => env('COHERE_API_KEY'),
             'base_url' => env('COHERE_BASE_URL', 'https://api.cohere.com/v2'),
+        ],
+        'gemini' => [
+            'api_key' => env('GEMINI_API_KEY'),
         ]
     ]
 ];

@@ -1,20 +1,27 @@
 import { Link, usePage } from '@inertiajs/react';
 import { dashboard, login, register } from '@/routes';
+import AppLogo from '../app-logo.jsx';
 
 export default function Header({ canRegister = true }) {
     const { auth } = usePage().props;
 
     return (
-        <header className="w-full border-b border-gray-200 dark:border-gray-800">
+        <header className="w-full bg-sky-50 ">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-                <h1 className="text-xl font-semibold text-sky-600 dark:text-sky-400">
+                <h1 className="flex text-lg font-semibold text-sky-600 dark:text-sky-400">
+                    <img
+                        src="/windsms-logo-short.png"
+                        alt="Windsms logo"
+                        className="size-8 fill-current text-white dark:text-black"
+                    />
                     <a
                         href="/"
                         className="hover:text-sky-600 dark:hover:text-sky-400"
                     >
-                    WindSMS
+                        WindSMS
                     </a>
                 </h1>
+
                 {/* Navigation Links */}
                 <nav className="hidden items-center gap-6 text-sm font-medium text-gray-700 md:flex dark:text-gray-300">
                     {/*<a href="#features" className="hover:text-sky-600 dark:hover:text-sky-400">*/}

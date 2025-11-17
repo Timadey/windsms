@@ -33,6 +33,8 @@ export default function Index({ subscribers, tags, filters }) {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showBulkUploadDialog, setShowBulkUploadDialog] = useState(false);
   const paginationLinks = subscribers.links || [];
+  const [inputPhones, setInputPhones] = useState('');
+
 
   const { data, setData, post, processing, reset, errors } = useForm({
     phone_number: '',
@@ -45,15 +47,43 @@ export default function Index({ subscribers, tags, filters }) {
     tag_ids: [],
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    post(subscriberStore().url, {
-      onSuccess: () => {
-        reset();
-        setShowAddDialog(false);
-      },
-    });
-  };
+
+    const handlePhoneChange = (e) => {
+        e.preventDefault();
+        const phoneNumbers = e.target.value;
+        // Split phone numbers by comma, trim spaces, and filter out empty entries
+        const phoneNumbersArray = phoneNumbers
+            .split(',')
+            .map((num) => num.trim())
+            .filter((num) => num !== '');
+
+        setData('phone_number', phoneNumbersArray);
+        setInputPhones(phoneNumbers);
+    }
+
+    const phoneErrors = Object.keys(errors)
+        .filter((key) => key.startsWith('phone_number'))
+        .map((key) => errors[key])
+        .join(' ');
+
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        // console.log(data.phone_number);
+        if (data.phone_number.length < 1) {
+            alert('Please enter at least one phone number.');
+            return;
+        }
+
+        // Send as array to match backend validation
+        post(subscriberStore().url,  {
+            onSuccess: () => {
+                reset();
+                setShowAddDialog(false);
+            },
+        });
+    };
 
   const handleBulkUpload = (e) => {
     e.preventDefault();
@@ -70,7 +100,7 @@ export default function Index({ subscribers, tags, filters }) {
       // router.delete(route('subscribers.destroy', subscriberId));
         router.delete(subscriberDestroy(subscriberId).url, {
             onSuccess: () => {
-                console.log('Subscriber deleted successfully');
+                // console.log('Subscriber deleted successfully');
             },
             preserveScroll: true,
         });
@@ -134,8 +164,8 @@ export default function Index({ subscribers, tags, filters }) {
                                                   />
                                                   <p className="mt-1 text-sm text-gray-500">
                                                       CSV should have columns:
-                                                      phone_number{/*, name*/}
-                                                      {/*(optional)*/}
+                                                      phone_number, name
+                                                      (optional)
                                                   </p>
                                               </div>
                                               <div>
@@ -215,20 +245,16 @@ export default function Index({ subscribers, tags, filters }) {
                                           >
                                               <div>
                                                   <Label htmlFor="phone_number">
-                                                      Phone Number
+                                                      Phone Numbers
+                                                      (comma-separated)
                                                   </Label>
                                                   <Input
                                                       id="phone_number"
-                                                      value={data.phone_number}
-                                                      onChange={(e) =>
-                                                          setData(
-                                                              'phone_number',
-                                                              e.target.value,
-                                                          )
+                                                      value={inputPhones}
+                                                      onChange={
+                                                          handlePhoneChange
                                                       }
-                                                      error={
-                                                          errors.phone_number
-                                                      }
+                                                      error={phoneErrors}
                                                   />
                                               </div>
                                               <div>
@@ -305,7 +331,7 @@ export default function Index({ subscribers, tags, filters }) {
                               <TableHeader>
                                   <TableRow>
                                       <TableHead>Phone Number</TableHead>
-                                      {/*<TableHead>Name</TableHead>*/}
+                                      <TableHead>Name</TableHead>
                                       <TableHead>Tags</TableHead>
                                       <TableHead>Added</TableHead>
                                       <TableHead>Actions</TableHead>

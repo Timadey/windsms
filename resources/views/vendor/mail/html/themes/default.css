@@ -67,7 +67,9 @@ p.sub {
 .header {
     padding: 40px 0 20px 0;
     text-align: center;
-    background-color: #ffffff;
+    color: #0284c7;
+    background-color: #f5f9ff;
+    /*background-color: #ffffff;*/
     border-bottom: 1px solid #e2e8f0;
 }
 

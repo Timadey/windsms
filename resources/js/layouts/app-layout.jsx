@@ -16,14 +16,13 @@ export default ({ children, breadcrumbs, ...props }) => {
             setAlertMessage(flash.success);
             setAlertType('success');
             setShowAlert(true);
-            const timer = setTimeout(() => setShowAlert(false), 4000);
+            const timer = setTimeout(() => setShowAlert(false), 10000);
             return () => clearTimeout(timer);
-        }
-        if (flash?.error) {
+        }else if (flash?.error) {
             setAlertMessage(flash.error);
             setAlertType('error');
             setShowAlert(true);
-            const timer = setTimeout(() => setShowAlert(false), 4000);
+            const timer = setTimeout(() => setShowAlert(false), 10000);
             return () => clearTimeout(timer);
         }
     }, [flash]);
@@ -40,14 +39,11 @@ export default ({ children, breadcrumbs, ...props }) => {
                     )}
                 >
                     <Alert
-                        variant={
-                            alertType === 'error' ? 'destructive' : 'default'
-                        }
                         className={cn(
                             'relative flex items-start gap-3 rounded-2xl border-0 p-4 pr-12 shadow-xl backdrop-blur-md',
                             alertType === 'success'
                                 ? 'bg-green-50 text-green-700 ring-1 ring-green-200'
-                                : 'bg-red-50 text-red-700 ring-1 ring-red-200',
+                                : 'bg-red-50 text-red-700 ring-1 ring-red-200'
                         )}
                     >
                         <div className="mt-0.5">

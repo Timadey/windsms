@@ -12,30 +12,35 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+        // $user->subscription->load('plan');
+        $campaigns = $user->campaigns();
 
         return Inertia::render('dashboard', [
             'stats' => [
-                'total_campaigns' => $user->campaigns()->count(),
+                'total_campaigns' => $campaigns->count(),
                 'total_subscribers' => $user->subscribers()->count(),
-                'total_sent' => $user->campaigns()->sum('sent_count'),
-                'total_failed' => $user->campaigns()->sum('failed_count'),
+                'total_sent' => $campaigns->sum('sent_count'),
+                'total_failed' => $campaigns->sum('failed_count'),
             ],
-            'recentCampaigns' => $user->campaigns()
+            'recentCampaigns' => $campaigns
                 ->latest()
                 ->take(5)
                 ->get(['id', 'name', 'status', 'sent_count', 'failed_count', 'created_at']),
             'messageTrends' => $this->getMessageTrends($user),
-            'currentSubscription' => $user->subscription,
+            'currentSubscription' => $user->subscription?->load('plan'),
+            'smsBalance' => $user->balance('sms-units'),
         ]);
     }
 
     private function getMessageTrends($user)
     {
-        return CampaignLog::whereHas('campaign', fn($q) => $q->where('user_id', $user->id))
-            ->selectRaw('DATE(sent_at) as date, COUNT(*) as sent, SUM(status = "failed") as failed')
-            ->whereNotNull('sent_at')
-            ->groupBy('date')
-            ->orderBy('date', 'asc')
-            ->get();
+        return cache()->remember('message_trend_'. $user->id, 600, function () use ($user) {
+            CampaignLog::whereHas('campaign', fn($q) => $q->where('user_id', $user->id))
+                ->selectRaw('DATE(sent_at) as date, COUNT(*) as sent, SUM(status = "failed") as failed')
+                ->whereNotNull('sent_at')
+                ->groupBy('date')
+                ->orderBy('date', 'asc')
+                ->get();
+        });
     }
 }

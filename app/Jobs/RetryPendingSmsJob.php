@@ -54,9 +54,9 @@ class RetryPendingSmsJob implements ShouldQueue
 
                 // Attempt to send SMS
                 $result = $smsService->send(
-                    phoneNumbers: [$log->subscriber->phone_number],
+                    phoneNumbers: [$log->phone_number],
                     message: $log->message_sent,
-                    senderId: $log->campaign->sender_id ?? config('services.mtn_bulksms.default_sender_id', 'Samic Data')
+                    senderId: $log->campaign->sender_id ?? config('services.mtn_bulksms.default_sender_id', 'Windsms')
                 );
 
                 if ($result && isset($result['success']) && $result['success']) {
@@ -74,7 +74,7 @@ class RetryPendingSmsJob implements ShouldQueue
                     $log->campaign->increment('sent_count', 1);
 
                     $successCount++;
-                    Log::info("Retry successful for {$log->subscriber->phone_number}");
+                    Log::info("Retry successful for {$log->phone_number}");
                 } else {
                     throw new \Exception($result['error'] ?? 'SMS sending failed');
                 }
@@ -102,7 +102,7 @@ class RetryPendingSmsJob implements ShouldQueue
                     $log->campaign->increment('failed_count', 1);
 
                     $permanentFailCount++;
-                    Log::error("Max retries reached for {$log->subscriber->phone_number}");
+                    Log::error("Max retries reached for {$log->phone_number}");
                 } else {
                     // Schedule next retry with exponential backoff
                     $retryDelay = $this->calculateRetryDelay($newRetryCount);
@@ -116,7 +116,7 @@ class RetryPendingSmsJob implements ShouldQueue
                     });
 
                     $stillPendingCount++;
-                    Log::warning("Retry #{$newRetryCount} failed for {$log->subscriber->phone_number}. Next retry in {$retryDelay} minutes");
+                    Log::warning("Retry #{$newRetryCount} failed for {$log->phone_number}. Next retry in {$retryDelay} minutes");
                 }
             }
         }
@@ -163,7 +163,76 @@ class RetryPendingSmsJob implements ShouldQueue
                 ]);
 
                 Log::info("Campaign {$campaign->id} marked as completed after retries");
+
+                if ($campaign->is_recurring) {
+                    $this->scheduleNextRecurrence($campaign);
+                }
             }
+        }
+    }
+
+    protected function scheduleNextRecurrence(Campaign $campaign): void
+    {
+        // Check if we've passed the end date
+        if ($campaign->recurrence_end_date && now()->isAfter($campaign->recurrence_end_date)) {
+            Log::info("Campaign {$campaign->id} has reached its end date. Not scheduling next occurrence.");
+            return;
+        }
+
+        // Calculate next run time
+        $nextRunAt = $this->calculateNextRun();
+
+        if (!$nextRunAt) {
+            Log::error("Failed to calculate next run time for campaign {$campaign->id}");
+            return;
+        }
+
+        // Create a new campaign instance for the next occurrence
+        $newCampaign = Campaign::create([
+            'user_id' => $campaign->user_id,
+            'name' => $campaign->name,
+            'message' =>$campaign->message,
+            'spintax_message' => $campaign->spintax_message,
+            'tag_ids' => $campaign->tag_ids,
+            'phone_numbers' => $campaign->phone_numbers,
+            'recipient_type' => $campaign->recipient_type,
+            'dispatch_at' => $nextRunAt,
+            'status' => 'scheduled',
+            'total_recipients' => $campaign->total_recipients,
+            'is_recurring' => true,
+            'recurrence_type' => $campaign->recurrence_type,
+            'recurrence_interval' => $campaign->recurrence_interval,
+            'recurrence_end_date' => $campaign->recurrence_end_date,
+            'next_run_at' => $this->calculateNextRun($campaign, $nextRunAt),
+        ]);
+
+        // Update current campaign
+        $campaign->update([
+            'last_run_at' => now(),
+            'next_run_at' => $nextRunAt,
+        ]);
+
+        Log::info("Scheduled next occurrence of campaign {$campaign->id} as campaign {$newCampaign->id} at {$nextRunAt}");
+    }
+
+    /**
+     * Calculate next run time for recurring campaign
+     */
+    protected function calculateNextRun(Campaign $campaign, $baseTime = null)
+    {
+        $carbon = $baseTime ? \Carbon\Carbon::parse($baseTime) : now();
+
+        switch ($campaign->recurrence_type) {
+            case 'daily':
+                return $carbon->addDay();
+            case 'weekly':
+                return $carbon->addWeek();
+            case 'monthly':
+                return $carbon->addMonth();
+            case 'custom':
+                return $carbon->addDays($campaign->recurrence_interval ?? 1);
+            default:
+                return null;
         }
     }
 

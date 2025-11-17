@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SenderIdController;
 use App\Http\Controllers\SubscriberController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\Admin\SenderIdController as AdminSenderIdController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -55,13 +57,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('campaigns/{campaign}', [CampaignController::class, 'show'])->name('campaigns.show');
     Route::post('campaigns/generate-spintax', [CampaignController::class, 'generateSpintax'])->name('campaigns.generate-spintax');
 
-    // Billing
-    Route::get('billing', [BillingController::class, 'index'])->name('billing.index');
-    Route::post('billing/subscribe', [BillingController::class, 'subscribe'])->name('billing.subscribe');
-    Route::post('billing/buy-extra', [BillingController::class, 'buyExtraUnits'])->name('billing.buy-extra-units');
-    Route::post('billing/cancel', [BillingController::class, 'cancelSubscription'])->name('billing.cancel');
-    Route::post('billing/renew', [BillingController::class, 'renewSubscription'])->name('billing.renew');
+    // Billing dashboard
+    Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+    // Subscribe to a plan
+    Route::post('/billing/subscribe', [BillingController::class, 'subscribe'])->name('billing.subscribe');
+    // Buy extra SMS units
+    Route::post('/billing/extra-units', [BillingController::class, 'buyExtraUnits'])->name('billing.extra-units');
+    // Renew subscription
+    Route::post('/billing/renew', [BillingController::class, 'renewSubscription'])->name('billing.renew');
+    // Cancel subscription
+    Route::post('/billing/cancel', [BillingController::class, 'cancelSubscription'])->name('billing.cancel');
+    // Payment callback (after Paystack redirect)
+    Route::get('/subscription/payment/callback', [BillingController::class, 'paymentCallback'])
+        ->name('subscription.payment.callback');
 
+    // User Sender ID Routes
+    Route::resource('sender-ids', SenderIdController::class)->only([
+        'index', 'create', 'store', 'show', 'destroy'
+    ]);
+
+    // Admin Sender ID Routes (add middleware for admin)
+    Route::middleware(['admin'])->prefix('admin')->group(function () {
+        Route::get('sender-ids', [AdminSenderIdController::class, 'index'])->name('admin.sender-ids.index');
+        Route::post('sender-ids/{senderId}/approve', [AdminSenderIdController::class, 'approve'])->name('admin.sender-ids.approve');
+        Route::post('sender-ids/{senderId}/reject', [AdminSenderIdController::class, 'reject'])->name('admin.sender-ids.reject');
+        Route::delete('sender-ids/{senderId}', [AdminSenderIdController::class, 'destroy'])->name('admin.sender-ids.destroy');
+    });
 });
 
 require __DIR__.'/settings.php';

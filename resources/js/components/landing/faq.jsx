@@ -12,7 +12,7 @@ const faqs = [
     // },
     {
         question: 'Can I use my own Sender ID?',
-        answer: 'Yes. Pro, Business, and Enterprise plans include custom sender IDs. Starter users can purchase it as an add-on for a small fee. Once verified, your sender name appears on all outgoing messages.',
+        answer: 'Yes. Pro, Business, and Enterprise plans include custom sender IDs. Free users can purchase it as an add-on for a small fee. Once verified, your sender name appears on all outgoing messages.',
     },
     {
         question: 'What is the Message Mixer?',

@@ -15,8 +15,19 @@ import { Link } from '@inertiajs/react';
 import { index as campaignsIndex } from '@/routes/campaigns';
 import { index as subscribersIndex } from '@/routes/subscribers';
 import { index as tagsIndex } from '@/routes/tags';
-import { BookOpen, Folder, LayoutGrid, Megaphone, Users, Tag } from 'lucide-react';
+import { index as SenderIdIndex } from '@/routes/sender-ids';
+import {
+    BookOpen,
+    Folder,
+    LayoutGrid,
+    Megaphone,
+    Users,
+    Tag,
+    IdCard,
+    Coins,
+} from 'lucide-react';
 import AppLogo from './app-logo';
+import billing from '../routes/billing/index.ts';
 
 const mainNavItems = [
     {
@@ -38,6 +49,16 @@ const mainNavItems = [
         title: 'Tags',
         href: tagsIndex(),
         icon: Tag,
+    },
+    {
+        title: 'Sender ID',
+        href: SenderIdIndex(),
+        icon: IdCard,
+    },
+    {
+        title: 'Billing',
+        href: billing.index().url,
+        icon: Coins,
     },
 ];
 

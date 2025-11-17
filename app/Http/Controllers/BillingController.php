@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers;
 
-// use App\Models\SmsUnit;
-// use App\Models\Transaction;
 use App\Models\Transaction;
+use App\Services\SubscriptionPaymentService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use LucasDotVin\Soulbscription\Models\Plan;
-use LucasDotVin\Soulbscription\Models\Subscription;
 
 class BillingController extends Controller
 {
+    public function __construct(
+        protected SubscriptionPaymentService $paymentService
+    ) {}
+
     public function index()
     {
         $user = auth()->user();
-
-        $subscription = $user->subscription;
+        $currentSubscription = $user->subscription?->load('plan');
 
         // Get all available plans
         $plans = Plan::with('features')->get()->map(function ($plan) {
@@ -28,7 +29,7 @@ class BillingController extends Controller
                 'grace_days' => $plan->grace_days,
                 'price' => $this->getPlanPrice($plan->name),
                 'is_yearly' => str_contains($plan->name, 'yearly'),
-                'features' => $plan->features->map(function ($feature) use ($plan) {
+                'features' => $plan->features->map(function ($feature) {
                     return [
                         'name' => $feature->name,
                         'consumable' => $feature->consumable,
@@ -39,25 +40,13 @@ class BillingController extends Controller
             ];
         });
 
-        // Get current subscription details
-        $currentSubscription = null;
         $featureUsage = [];
 
-        if ($subscription) {
-            $currentSubscription = [
-                'id' => $subscription->id,
-                'plan' => $subscription->plan->name,
-                'started_at' => $subscription->started_at,
-                'expires_at' => $subscription->expires_at,
-                'grace_days_ended_at' => $subscription->grace_days_ended_at,
-                'was_switched' => $subscription->was_switched,
-                'is_active' => (bool) $subscription->expired_at,
-                'is_suppressed' => (bool) $subscription->suppressed_at,
-                'days_remaining' => now()->diffInDays($subscription->expires_at, false),
-            ];
-
+        if ($currentSubscription) {
             // Get feature usage
-            foreach ($subscription->plan->features as $feature) {
+            $currentSubscription->plan->extra_sms_price = $this->getExtraSmsPrice($currentSubscription->plan->name);
+
+            foreach ($currentSubscription->plan->features as $feature) {
                 if ($feature->consumable) {
                     $consumption = $user->getCurrentConsumption($feature->name);
                     $remaining = $user->balance($feature->name);
@@ -77,22 +66,32 @@ class BillingController extends Controller
         }
 
         // Get SMS units balance
-        $smsBalance = $user->balance('sms-units') ?? 0; //$user->sms_units()->sum('units');
+        $smsBalance = $user->balance('sms-units') ?? 0;
 
         // Get recent transactions
-        // $transactions = Transaction::where('user_id', $user->id)
-        //     ->latest()
-        //     ->take(10)
-        //     ->get();
-        // $transactions = [];
+        $transactions = Transaction::where('user_id', $user->id)
+            ->latest()
+            ->take(10)
+            ->get()
+            ->map(function ($transaction) {
+                return [
+                    'id' => $transaction->id,
+                    'type' => $transaction->type,
+                    'amount' => $transaction->amount,
+                    'description' => $transaction->description,
+                    'status' => $transaction->status,
+                    'payment_method' => $transaction->payment_method,
+                    'reference' => $transaction->reference,
+                    'created_at' => $transaction->created_at,
+                ];
+            });
 
         return Inertia::render('billing/index', [
             'plans' => $plans,
             'currentSubscription' => $currentSubscription,
             'featureUsage' => $featureUsage,
             'smsBalance' => $smsBalance,
-            // 'transactions' => $transactions,
-            // 'extraSmsPrice' => $this->getExtraSmsPrice($subscription?->plan->name),
+            'transactions' => $transactions,
         ]);
     }
 
@@ -100,92 +99,113 @@ class BillingController extends Controller
     {
         $request->validate([
             'plan_id' => 'required|exists:plans,id',
-            // 'payment_method' => 'required|in:card,wallet,bank_transfer',
             'extra_sms_units' => 'nullable|integer|min:0',
         ]);
 
-        $user = auth()->user();
-        $plan = Plan::findOrFail($request->plan_id);
-        $planPrice = $this->getPlanPrice($plan->name);
-        $extraUnits = $request->extra_sms_units ?? 0;
-        $extraSmsPrice = $this->getExtraSmsPrice($plan->name);
-        $extraSmsCost = $extraUnits * $extraSmsPrice;
-        $totalAmount = $planPrice + $extraSmsCost;
+        try {
+            $user = auth()->user();
+            $plan = Plan::findOrFail($request->plan_id);
+            $extraUnits = $request->extra_sms_units ?? 0;
+            // Initialize payment
+            $result = $this->paymentService->initializeSubscriptionPayment(
+                $user,
+                $plan,
+                $extraUnits,
+                'subscription'
+            );
+            // dd($result);
 
-        // Process payment (integrate with your payment gateway)
-        $paymentResult = $this->processPayment($user, $totalAmount, $request->payment_method);
+            if (!$result['success']) {
+                return back()->with('error', $result['message']);
+            }
 
-        if (!$paymentResult['success']) {
-            return back()->with('error', 'Payment failed. Please try again.');
+            // Redirect to Paystack checkout
+            return Inertia::location($result['authorization_url']);
+
+        } catch (\Exception $e) {
+            logger()->error('Subscription initialization failed', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+
+            return back()->with('error', 'Unable to process subscription. Please try again.');
         }
-
-        // TODO: ask user if they want to suppress or wait till end
-
-        // Cancel existing subscription if any
-        if ($user->subscription && !$user->subscription->expired()) {
-            $user->switchTo($plan);
-        }
-
-        // Create new subscription
-        $subscription = $user->subscribeTo($plan);
-
-        // Credit SMS units (plan units + extra units)
-        $smsFeature = $plan->features()->where('name', 'sms-units')->first();
-        $planSmsUnits = $smsFeature ? $smsFeature->pivot->charges : 0;
-        $totalSmsUnits = $planSmsUnits + $extraUnits;
-
-        // Record transaction
-        Transaction::create([
-            'user_id' => $user->id,
-            'type' => 'subscription',
-            'amount' => $totalAmount,
-            'description' => "Subscription to {$plan->name} plan" . ($extraUnits > 0 ? " + {$extraUnits} extra SMS units" : ""),
-            'status' => 'completed',
-            'payment_method' => $request->payment_method,
-            'reference' => $paymentResult['reference'],
-        ]);
-
-        return redirect()->route('billing.index')->with('success', 'Subscription activated successfully!');
     }
 
     public function buyExtraUnits(Request $request)
     {
         $request->validate([
             'units' => 'required|integer|min:1',
-            'payment_method' => 'required|in:card,wallet,bank_transfer',
         ]);
 
-        $user = auth()->user();
-        $subscription = $user->subscription;
+        try {
+            $user = auth()->user();
+            $units = $request->units;
 
-        // Check if user has active subscription
-        if (!$subscription || $subscription->expired()) {
-            return back()->with('error', 'You must have an active subscription to purchase extra SMS units.');
+            // Initialize payment
+            $result = $this->paymentService->initializeExtraUnitsPayment($user, $units);
+
+            if (!$result['success']) {
+                return back()->with('error', $result['message']);
+            }
+
+            // Redirect to Paystack checkout
+            return Inertia::location($result['authorization_url']);
+
+        } catch (\Exception $e) {
+            logger()->error('Extra units purchase failed', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+
+            return back()->with('error', 'Unable to process purchase. Please try again.');
         }
+    }
 
-        $units = $request->units;
-        $pricePerUnit = $this->getExtraSmsPrice($subscription->plan->name);
-        $totalAmount = $units * $pricePerUnit;
+    public function renewSubscription()
+    {
+        try {
+            $user = auth()->user();
+            $subscription = $user->subscription;
 
-        // Process payment
-        $paymentResult = $this->processPayment($user, $totalAmount, $request->payment_method);
+            if (!$subscription || is_null($subscription->expired_at)) {
+                return back()->with('error', 'No subscription found to renew.');
+            }
+            // dd($subscription->expired());
 
-        if (!$paymentResult['success']) {
-            return back()->with('error', 'Payment failed. Please try again.');
+            $expiresWithinSevenDays = $subscription->expired_at &&
+                $subscription->expired_at->lessThanOrEqualTo(now()->addDays(7));
+
+            if (!$subscription->expired() && !$expiresWithinSevenDays && !$subscription->canceled_at && !$subscription->suppressed_at) {
+                return back()->with('error', 'Your subscription is still active.');
+            }
+
+            $plan = $subscription->plan;
+            // dd($plan);
+
+            // Initialize renewal payment
+            $result = $this->paymentService->initializeSubscriptionPayment(
+                $user,
+                $plan,
+                0, // No extra units on renewal
+                'renewal'
+            );
+
+            if (!$result['success']) {
+                return back()->with('error', $result['message']);
+            }
+
+            // Redirect to Paystack checkout
+            return Inertia::location($result['authorization_url']);
+
+        } catch (\Exception $e) {
+            logger()->error('Subscription renewal failed', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+
+            return back()->with('error', 'Unable to process renewal. Please try again.');
         }
-
-        // Record transaction
-        Transaction::create([
-            'user_id' => $user->id,
-            'type' => 'extra_sms',
-            'amount' => $totalAmount,
-            'description' => "Purchase of {$units} extra SMS units",
-            'status' => 'completed',
-            'payment_method' => $request->payment_method,
-            'reference' => $paymentResult['reference'],
-        ]);
-
-        return redirect()->route('billing.index')->with('success', "{$units} SMS units added to your account!");
     }
 
     public function cancelSubscription()
@@ -198,69 +218,90 @@ class BillingController extends Controller
         }
 
         // Suppress the subscription (it will remain active until expiration)
-        $subscription->suppress();
+        $subscription->cancel();
 
-        return redirect()->route('billing.index')->with('success', 'Subscription cancelled. Your plan will remain active until the end of the billing period.');
+        return redirect()->route('billing.index')
+            ->with('success', 'Subscription cancelled. Your plan will remain active until the end of the billing period.');
     }
 
-    public function renewSubscription()
+    /**
+     * Payment callback handler (for redirect after payment)
+     */
+    public function paymentCallback(Request $request)
     {
-        $user = auth()->user();
-        $subscription = $user->subscription;
+        $reference = $request->query('reference');
 
-        if (!$subscription) {
-            return back()->with('error', 'No subscription found to renew.');
+        if (!$reference) {
+            return redirect()->route('billing.index')
+                ->with('error', 'Invalid payment reference.');
         }
 
-        // Unsuppress if it was cancelled
-        if ($subscription->suppressed) {
-            $subscription->unsuppress();
+        // Verify the payment
+        $verification = $this->paymentService->verifyPaymentStatus($reference);
+
+        if (!$verification['success']) {
+            return redirect()->route('billing.index')
+                ->with('error', 'Unable to verify payment. Please contact support if you were charged.');
         }
 
-        // If expired, renew it
-        if ($subscription->expired()) {
-            $plan = $subscription->plan;
-            $planPrice = $this->getPlanPrice($plan->name);
+        $status = $verification['data']['status'] ?? 'failed';
 
-            // For demo, using wallet payment method
-            $paymentResult = $this->processPayment($user, $planPrice, 'wallet');
+        if ($status === 'success') {
+            // Process the webhook data
+            $this->paymentService->processPaymentWebhook($verification);
 
-            if (!$paymentResult['success']) {
-                return back()->with('error', 'Payment failed. Please try again.');
-            }
-
-            $subscription->renew();
-
-            // Credit plan SMS units
-            $smsFeature = $plan->features()->where('name', 'sms-units')->first();
-            $planSmsUnits = $smsFeature ? $smsFeature->pivot->charges : 0;
-
-            Transaction::create([
-                'user_id' => $user->id,
-                'type' => 'renewal',
-                'amount' => $planPrice,
-                'description' => "Renewal of {$plan->name} plan",
-                'status' => 'completed',
-                'payment_method' => 'wallet',
-                'reference' => $paymentResult['reference'],
-            ]);
+            return redirect()->route('billing.index')
+                ->with('success', 'Payment successful! Your subscription has been activated.');
         }
 
-        return redirect()->route('billing.index')->with('success', 'Subscription renewed successfully!');
+        return redirect()->route('billing.index')
+            ->with('error', 'Payment was not successful. Please try again.');
     }
 
-    // TODO: make this a database thing
+    /**
+     * Webhook handler for Paystack
+     */
+    public function webhook(Request $request)
+    {
+        $payload = $request->all();
+        $event = $payload['event'] ?? null;
+
+        // We only process successful charge events
+        if ($event === 'charge.success') {
+            try {
+                $result = $this->paymentService->processPaymentWebhook($payload);
+
+                return response()->json([
+                    'success' => $result['success'],
+                    'message' => $result['message'] ?? ($result['error'] ?? 'Processed')
+                ]);
+            } catch (\Exception $e) {
+                logger()->error('Webhook processing error', [
+                    'error' => $e->getMessage(),
+                    'payload' => $payload
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Processing error'
+                ], 500);
+            }
+        }
+
+        return response()->json(['message' => 'Event received']);
+    }
+
     private function getPlanPrice(string $planName): float
     {
         $prices = [
-            'starter' => 3000,
-            'starter-yearly' => 3000 * 12 * 0.85, // 15% discount
-            'pro' => 5000,
-            'pro-yearly' => 5000 * 12 * 0.85,
-            'business' => 10000,
-            'business-yearly' => 10000 * 12 * 0.85,
-            'enterprise' => 20000,
-            'enterprise-yearly' => 20000 * 12 * 0.85,
+            'free' => 0,
+            // 'starter-yearly' => 3000 * 12 * 0.85,
+            'pro' => 4998.98,
+            'pro-yearly' => 4998.98 * 12 * 0.85,
+            'business' => 9997.99,
+            'business-yearly' => 9997.99 * 12 * 0.85,
+            'enterprise' => 19995.99,
+            'enterprise-yearly' => 19995.99 * 12 * 0.85,
         ];
 
         return $prices[$planName] ?? 0;
@@ -269,8 +310,8 @@ class BillingController extends Controller
     private function getExtraSmsPrice(string $planName): float
     {
         $prices = [
-            'starter' => 5.0,
-            'starter-yearly' => 5.0,
+            'free' => 5.0,
+            // 'starter-yearly' => 5.0,
             'pro' => 4.95,
             'pro-yearly' => 4.95,
             'business' => 4.8,
@@ -280,15 +321,5 @@ class BillingController extends Controller
         ];
 
         return $prices[$planName] ?? 5.0;
-    }
-
-    private function processPayment($user, $amount, $paymentMethod): array
-    {
-        // Integrate with your payment gateway (Paystack, Flutterwave, etc.)
-        // For now, returning success for demo
-        return [
-            'success' => true,
-            'reference' => 'PAY-' . time() . '-' . rand(1000, 9999),
-        ];
     }
 }

@@ -1,6 +1,6 @@
 export default function AppLogoIcon(props) {
     return (
-        <img src="/samic_black_logo.png" alt="Samic logo" {...props} />
+        <img src="/windsms-logo-short.png" alt="Windsms logo" {...props} />
         // <svg {...props} viewBox="0 0 40 42" xmlns="http://www.w3.org/2000/svg">
         //     <path
         //         fillRule="evenodd"

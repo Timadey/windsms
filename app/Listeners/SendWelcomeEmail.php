@@ -2,13 +2,16 @@
 
 namespace App\Listeners;
 
-use App\Mail\WelcomeMail;
+use App\Notifications\WelcomeMail;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Support\Facades\Mail;
+use LucasDotVin\Soulbscription\Models\Plan;
 
-class SendWelcomeEmail
+// use Illuminate\Queue\InteractsWithQueue;
+// use Illuminate\Support\Facades\Mail;
+
+class SendWelcomeEmail implements ShouldQueue
 {
     /**
      * Create the event listener.
@@ -21,12 +24,15 @@ class SendWelcomeEmail
     /**
      * Handle the event.
      */
-    public function handle(Registered $event): void
+    public function handle(Verified $event): void
     {
         // Access the registered user through $event->user
         $user = $event->user;
-
+        $plan = Plan::where('name', 'free')->first();
+        if($plan && !$user->subscription ){
+            $user->subscribeTo($plan);
+        }
         // Example: Send a welcome email
-        Mail::to($user->email)->queue(new WelcomeMail($user));
+        $user->notify(new WelcomeMail($user));
     }
 }

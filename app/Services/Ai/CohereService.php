@@ -92,7 +92,7 @@ class CohereService implements AiProviderInterface
                     'role' => 'system',
                     'content' => 'You are a spintax generator.
                     Convert the user\'s message into spintax format using {option1|option2|option3}.
-                    Generate at least 5 variations per key phrase while keeping meaning intact.
+                    Generate at least 10 variations per key words and phrase while keeping meaning intact.
                     Return only the spintax text, no explanations.'
                 ],
                 [

@@ -1,4 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx';
+import { TrendingUp } from 'lucide-react';
+import { Badge } from '../ui/badge.jsx';
 
 export function TransactionHistory({ transactions }) {
     return (
@@ -59,7 +61,7 @@ export function TransactionHistory({ transactions }) {
                                         colSpan="5"
                                         className="py-8 text-center text-gray-500"
                                     >
-                                        No transactions yet
+                                        No transactions yet. Subscribe to a plan to start a transaction.
                                     </td>
                                 </tr>
                             )}

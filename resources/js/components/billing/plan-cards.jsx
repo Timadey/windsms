@@ -29,7 +29,7 @@ export function PlanCards({
             .replace('-monthly', '');
 
         const subtitles = {
-            starter: 'Individuals, Micro Businesses',
+            free: 'Individuals, Micro Businesses',
             pro: 'SMEs, Marketers',
             business: 'High-volume Businesses',
             enterprise: 'Agencies, Enterprises',
@@ -40,7 +40,7 @@ export function PlanCards({
             subtitle: subtitles[baseName] || '',
             price: plan.price,
             sms: smsUnits,
-            popular: baseName === 'pro', // highlight pro plan by default
+            popular: baseName === 'business', // highlight pro plan by default
         };
     };
 
@@ -63,7 +63,7 @@ export function PlanCards({
                         }
                         onClick={() => onBillingCycleChange('yearly')}
                     >
-                        Yearly
+                        Yearly(-15%)
                     </Button>
                 </div>
             </div>
@@ -71,7 +71,7 @@ export function PlanCards({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {plans.map((plan) => {
                     const details = getPlanDetails(plan);
-                    const isCurrent = currentSubscription?.plan === plan.name;
+                    const isCurrent = currentSubscription?.plan.name === plan.name;
 
                     return (
                         <Card

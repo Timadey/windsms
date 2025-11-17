@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('message');
             $table->text('spintax_message')->nullable();
-            $table->json('tag_ids');
+            $table->json('tag_ids')->nullable();
             $table->timestamp('dispatch_at')->nullable();
             $table->enum('status', ['draft', 'scheduled', 'processing', 'completed', 'failed'])->default('draft');
             $table->integer('total_recipients')->default(0);
