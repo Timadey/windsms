@@ -111,7 +111,7 @@ export default function Footer() {
                             </li>
                             <li className="flex items-center gap-2">
                                 <Phone className="h-4 w-4 text-sky-500" />
-                                +234 907 977 2482
+                                +234 90 CALL WIND
                             </li>
                             <li className="flex items-center gap-2">
                                 <MessageCircle className="h-4 w-4 text-sky-500" />

@@ -45,7 +45,7 @@ class SenderIdController extends Controller
         $user = $request->user();
         if ($user->cantConsume(FeaturesEnum::sender->value, 1))
         {
-            return redirect()->back('error', "You do not have enough credits to add a sender ID.");
+            return back()->with('error', "You do not have enough credits to add a sender ID.");
         }
 
         $user->consume(FeaturesEnum::sender->value, 1);

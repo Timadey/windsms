@@ -8,6 +8,7 @@ import { ContactSection } from '../components/landing/contactus.jsx';
 import CtaSection from '../components/landing/cta.jsx';
 import Header from '../components/landing/header.jsx';
 import Footer from '../components/landing/footer.jsx';
+import HowItWorks from '../components/landing/how-it-works.jsx';
 
 export default function Welcome({ canRegister = true }) {
     const { auth } = usePage().props;
@@ -29,7 +30,8 @@ export default function Welcome({ canRegister = true }) {
                 {/* Hero Section */}
                 <HeroSection />
                 <FeaturesSection />
-                <WhyUsSection />
+                <HowItWorks />
+                {/*<WhyUsSection />*/}
                 <TestimonialsSection />
                 <CtaSection />
                 <FAQSection />

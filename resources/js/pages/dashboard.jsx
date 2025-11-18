@@ -43,6 +43,28 @@ export default function Dashboard({ stats, recentCampaigns, messageTrends, smsBa
 
     const isActive = normalizedSubscription?.is_active;
 
+    // Flag to enable demo charts when real data doesn't exist
+    const showDemoChart = false;
+
+// Demo chart data
+    const demoChartData = Array.from({ length: 30 }).map((_, i) => {
+        const date = dayjs().subtract(29 - i, "day").format("MMM DD");
+
+        return {
+            date,
+            sent: Math.floor(Math.random() * 150) + 20,
+            failed: Math.floor(Math.random() * 20),
+        };
+    });
+
+// Determine which dataset to show
+    const chartData =
+        messageTrends?.length && !showDemoChart
+            ? messageTrends
+            : showDemoChart
+                ? demoChartData
+                : [];
+
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -167,9 +189,9 @@ export default function Dashboard({ stats, recentCampaigns, messageTrends, smsBa
                         <CardTitle>Message Trends (Last 30 Days)</CardTitle>
                     </CardHeader>
                     <CardContent className="h-64">
-                        {messageTrends?.length ? (
+                        {chartData.length ? (
                             <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={messageTrends}>
+                                <LineChart data={chartData}>
                                     <XAxis dataKey="date" />
                                     <YAxis />
                                     <Tooltip />

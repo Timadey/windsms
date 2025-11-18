@@ -31,7 +31,7 @@ class TagController extends Controller
         $user = $request->user();
         if ($user->cantConsume(FeaturesEnum::tags->value, 1))
         {
-            return redirect()->back('error', "You do not have enough credits to add a new tag.");
+            return back()->with('error', "You do not have enough credits to add a new tag.");
         }
 
         $user->consume(FeaturesEnum::tags->value, 1);

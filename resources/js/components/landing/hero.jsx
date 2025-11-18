@@ -1,6 +1,7 @@
 import { register } from '@/routes';
 import { Link } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
+import { BarChart3, Send, Sparkles } from 'lucide-react';
 
 export default function HeroSection() {
     const canvasRef = useRef(null);
@@ -130,7 +131,7 @@ export default function HeroSection() {
     }, []);
 
     return (
-        <section className="w-full relative mx-auto flex  flex-col items-center justify-center gap-6 overflow-hidden bg-gradient-to-b from-sky-50 to-white px-6 py-24 text-center">
+        <section className="relative mx-auto flex w-full flex-col items-center justify-center gap-6 overflow-hidden bg-gradient-to-b from-sky-50 to-white px-6 py-24 text-center">
             <canvas
                 ref={canvasRef}
                 className="pointer-events-none absolute inset-0 h-full w-full"
@@ -138,36 +139,54 @@ export default function HeroSection() {
             />
 
             <div className="relative z-10">
-                <h2 className="max-w-3xl text-4xl leading-tight font-bold text-[#0A1A2F] sm:text-5xl dark:text-white">
-                    Send <span className="text-sky-600">Fast</span>,{' '}
-                    <span className="text-teal-500">Reliable</span> &
-                    <br /> Personalized Bulk SMS with Ease.
-                </h2>
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-4 py-2 text-sm shadow-sm">
+                    <Sparkles className="h-4 w-4 text-sky-600" />
+                    <span className="text-gray-700">
+                        AI-Powered Message Delivery
+                    </span>
+                </div>
+                <h1 className="max-w-3xl text-4xl leading-tight font-bold text-[#0A1A2F] sm:text-5xl dark:text-white">
+                    Bulk SMS That{' '}
+                    <span className="text-teal-500">Delivers Fast</span> &{' '}
+                    <span className="text-sky-600">Beats Spam Filters</span>{' '}
+                    Every Time
+                </h1>
             </div>
 
+            {/*<div className="relative z-10">*/}
+            {/*    <h2 className="max-w-3xl text-4xl leading-tight font-bold text-[#0A1A2F] sm:text-5xl dark:text-white">*/}
+            {/*        Send <span className="text-sky-600">Fast</span>,{' '}*/}
+            {/*        <span className="text-teal-500">Reliable</span> &*/}
+            {/*        <br /> Personalized Bulk SMS with Ease.*/}
+            {/*    </h2>*/}
+            {/*</div>*/}
+
             <p className="relative z-10 max-w-xl text-gray-600 dark:text-gray-400">
-                Windsms helps businesses communicate with millions of customers
-                in seconds — schedule campaigns, personalize messages, and track
-                delivery analytics effortlessly.
+                Deliver personalized SMS at scale with AI-generated variations,
+                automated scheduling, and real-time performance insights.
+                Designed for teams that care about reach, speed, and
+                conversions.
             </p>
 
             <div className="relative z-10 mt-4 flex gap-4">
                 <Link
                     href={register()}
-                    className="rounded-lg bg-sky-600 px-6 py-3 text-white shadow-md transition hover:bg-sky-700"
+                    className="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-6 py-3 text-white shadow-md transition hover:bg-sky-700"
                 >
-                    Get Started Free
+                    <Send className="h-5 w-5" />
+                    Start Sending Free
                 </Link>
                 <Link
-                    href="#features"
-                    className="rounded-lg border border-sky-500 px-6 py-3 text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-900/30"
+                    href="#how-it-works"
+                    className="inline-flex items-center gap-2 rounded-lg border border-sky-500 px-6 py-3 text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-900/30"
                 >
-                    Explore Features
+                    <BarChart3 className="h-5 w-5" />
+                    See How It Works
                 </Link>
             </div>
 
             <img
-                src="/dashboard.png"
+                src="/screens/campaign.png"
                 alt="SMS Dashboard Preview"
                 className="relative z-10 mt-10 w-full max-w-5xl rounded-2xl shadow-lg"
             />

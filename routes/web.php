@@ -18,6 +18,10 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+Route::get('/stories', function () {
+    return Inertia::render('stories');
+})->name('stories');
+
 Route::get('/pricing', function () {
     return Inertia::render('pricingpage');
 })->name('pricing');

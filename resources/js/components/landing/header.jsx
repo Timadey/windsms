@@ -6,7 +6,7 @@ export default function Header({ canRegister = true }) {
     const { auth } = usePage().props;
 
     return (
-        <header className="w-full bg-sky-50 ">
+        <header className="w-full bg-sky-50">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
                 <h1 className="flex text-lg font-semibold text-sky-600 dark:text-sky-400">
                     <img
@@ -27,18 +27,24 @@ export default function Header({ canRegister = true }) {
                     {/*<a href="#features" className="hover:text-sky-600 dark:hover:text-sky-400">*/}
                     {/*    Features*/}
                     {/*</a>*/}
-                    <a
+                    <Link
+                        href="/"
+                        className="hover:text-sky-600 dark:hover:text-sky-400"
+                    >
+                        Home
+                    </Link>
+                    <Link
                         href="/pricing"
                         className="hover:text-sky-600 dark:hover:text-sky-400"
                     >
                         Pricing
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                         href="/contact"
                         className="hover:text-sky-600 dark:hover:text-sky-400"
                     >
                         Contact
-                    </a>
+                    </Link>
                     <a
                         href="#"
                         className="hover:text-sky-600 dark:hover:text-sky-400"

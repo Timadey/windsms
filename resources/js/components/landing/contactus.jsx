@@ -16,61 +16,62 @@ export const ContactSection = () => {
     return (
         <section
             id="contact"
-            className="relative bg-gradient-to-b from-white to-sky-50 dark:from-gray-950 dark:to-gray-900 py-20 md:py-24"
+            className="relative bg-gradient-to-b from-white to-sky-50 py-20 md:py-24 dark:from-gray-950 dark:to-gray-900"
         >
             <div className="mx-auto max-w-6xl px-6">
                 {/* Header */}
-                <div className="text-center mb-14">
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white md:text-5xl">
+                <div className="mb-14 text-center">
+                    <h2 className="text-gray-900text-gray-900 text-3xl font-extrabold tracking-tight md:text-5xl dark:text-white">
                         Get in Touch
                     </h2>
                     <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
-                        Have a question, partnership idea, or need help with your account?
-                        We’re here to help — reach out anytime.
+                        Have a question, partnership idea, or need help with
+                        your account? We’re here to help — reach out anytime.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
                     {/* Contact Info */}
                     <div className="space-y-8">
                         <div>
-                            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+                            <h3 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">
                                 Contact Information
                             </h3>
-                            <p className="text-gray-600 dark:text-gray-400 mb-6">
-                                Reach us directly through any of the channels below.
+                            <p className="mb-6 text-gray-600 dark:text-gray-400">
+                                Reach us directly through any of the channels
+                                below.
                             </p>
                             <ul className="space-y-4">
                                 <li className="flex items-center gap-3">
                                     <Phone className="h-5 w-5 text-sky-600" />
                                     <span className="text-gray-700 dark:text-gray-300">
-                    +234 907 977 2482
-                  </span>
+                                        +234 90 CALL WIND
+                                    </span>
                                 </li>
                                 <li className="flex items-center gap-3">
                                     <Mail className="h-5 w-5 text-sky-600" />
                                     <span className="text-gray-700 dark:text-gray-300">
-                    support@windsms.com
-                  </span>
+                                        support@windsms.com
+                                    </span>
                                 </li>
                                 <li className="flex items-center gap-3">
                                     <MapPin className="h-5 w-5 text-sky-600" />
                                     <span className="text-gray-700 dark:text-gray-300">
-                    Ikeja, Lagos, Nigeria
-                  </span>
+                                        Ikeja, Lagos, Nigeria
+                                    </span>
                                 </li>
                             </ul>
                         </div>
 
-                        <div className="border-t border-gray-200 dark:border-gray-800 pt-6">
-                            <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">
+                        <div className="border-t border-gray-200 pt-6 dark:border-gray-800">
+                            <h4 className="text-md mb-2 font-medium text-gray-800 dark:text-gray-200">
                                 Prefer WhatsApp?
                             </h4>
                             <a
                                 href="https://wa.me/2349079772482"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 rounded-md bg-sky-600 px-5 py-2.5 text-white hover:bg-sky-700 transition"
+                                className="inline-flex items-center gap-2 rounded-md bg-sky-600 px-5 py-2.5 text-white transition hover:bg-sky-700"
                             >
                                 <Send className="h-4 w-4" />
                                 Chat on WhatsApp
@@ -79,7 +80,7 @@ export const ContactSection = () => {
                     </div>
 
                     {/* Contact Form */}
-                    <div className="bg-white dark:bg-gray-950 shadow-lg rounded-2xl p-8 border border-gray-100 dark:border-gray-800">
+                    <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-lg dark:border-gray-800 dark:bg-gray-950">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Name */}
                             <div>
@@ -96,7 +97,7 @@ export const ContactSection = () => {
                                     value={form.name}
                                     onChange={handleChange}
                                     required
-                                    className="mt-2 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-4 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                                    className="mt-2 w-full rounded-md border border-gray-300 bg-transparent px-4 py-2 text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 dark:border-gray-700 dark:text-gray-100"
                                 />
                             </div>
 
@@ -115,7 +116,7 @@ export const ContactSection = () => {
                                     value={form.email}
                                     onChange={handleChange}
                                     required
-                                    className="mt-2 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-4 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                                    className="mt-2 w-full rounded-md border border-gray-300 bg-transparent px-4 py-2 text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 dark:border-gray-700 dark:text-gray-100"
                                 />
                             </div>
 
@@ -135,21 +136,20 @@ export const ContactSection = () => {
                                     required
                                     rows={5}
                                     placeholder="Tell us how we can help..."
-                                    className="mt-2 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-4 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                                    className="mt-2 w-full rounded-md border border-gray-300 bg-transparent px-4 py-2 text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 dark:border-gray-700 dark:text-gray-100"
                                 />
                             </div>
 
                             {/* Button */}
                             <button
                                 type="submit"
-                                className="inline-flex items-center justify-center w-full rounded-md bg-sky-600 px-6 py-3 text-white font-medium hover:bg-sky-700 transition"
+                                className="inline-flex w-full items-center justify-center rounded-md bg-sky-600 px-6 py-3 font-medium text-white transition hover:bg-sky-700"
                             >
-                                <Send className="h-4 w-4 mr-2" />
+                                <Send className="mr-2 h-4 w-4" />
                                 Send Message
                             </button>
                         </form>
                     </div>
-
                 </div>
             </div>
         </section>

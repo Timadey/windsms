@@ -36,9 +36,9 @@ export const FAQSection = () => {
     const [openIndex, setOpenIndex] = useState(null);
 
     return (
-        <section id="faq" className="bg-white py-20 md:py-24 dark:bg-gray-950">
+        <section id="faq" className="px-8 bg-white py-20 md:py-24 dark:bg-gray-950">
             <div className="mx-auto max-w-4xl px-6 text-center">
-                <h2 className="text-3xl font-bold text-gray-900 md:text-5xl dark:text-white">
+                <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 md:text-5xl dark:text-white">
                     Frequently Asked Questions
                 </h2>
                 <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">

@@ -3,30 +3,33 @@ import { Star } from 'lucide-react';
 export default function TestimonialsSection() {
     const testimonials = [
         {
-            name: 'Grace E.',
-            role: 'Marketing Manager, QuickReach',
-            text: 'Windsms has completely transformed how we handle campaign communication. The delivery rate is amazing, and the personalized message feature adds a human touch our customers love.',
-            image: 'https://randomuser.me/api/portraits/women/65.jpg',
+            name: "Grace E.",
+            role: "Marketing Manager, QuickReach (Retail & E-commerce)",
+            text:
+                "WindSMS transformed how we engage customers. We automated follow-ups, personalized offers, and abandoned-cart nudges without overwhelming users. The AI message mixer kept our campaigns fresh and led to a 37% increase in repeat purchases within six weeks.",
+            image: "https://randomuser.me/api/portraits/women/65.jpg"
         },
         {
-            name: 'David O.',
-            role: 'Founder, EduReach Africa',
-            text: 'Scheduling and tracking campaigns has never been this seamless. Windsms gives us reliable performance and excellent reporting. It’s now our go-to for all outreach efforts.',
-            image: 'https://randomuser.me/api/portraits/men/45.jpg',
+            name: "Pastor Daniel K.",
+            role: "Communications Coordinator, Newlife Christian Center (Religious Organization)",
+            text:
+                "Keeping members informed was a challenge until WindSMS. Automated weekly broadcasts and personalized reminders changed everything. Event attendance increased by 64%, volunteer participation grew, and our members feel more connected than ever.",
+            image: "https://randomuser.me/api/portraits/men/12.jpg"
         },
         {
-            name: 'Sophia A.',
-            role: 'Communications Lead, HealthLink',
-            text: 'The AI-powered message mixer is pure genius! Our engagement rates improved instantly since every message feels fresh and personalized. Highly recommend Windsms!',
-            image: 'https://randomuser.me/api/portraits/women/32.jpg',
+            name: "Sophia A.",
+            role: "Communications Lead, HealthLink (Healthcare)",
+            text:
+                "We wanted a better way to reduce appointment no-shows. WindSMS’ AI-powered reminders felt more human and engaging. Attendance improved by 29%, and follow-up responses doubled in just the first month.",
+            image: "https://randomuser.me/api/portraits/women/32.jpg"
         },
     ];
 
     return (
         <section className="relative bg-white py-24 dark:bg-[#0a0a0a]">
             <div className="mx-auto w-full max-w-6xl px-6 text-center">
-                <h2 className="text-3xl font-semibold text-[#1b1b18] md:text-4xl dark:text-white">
-                    Don't just take our words for it
+                <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 md:text-5xl dark:text-white">
+                    Don't Just Take Our Words For It
                 </h2>
                 <p className="mt-3 text-lg text-gray-600 dark:text-gray-400">
                     Trusted by businesses and brands who rely on us for fast,

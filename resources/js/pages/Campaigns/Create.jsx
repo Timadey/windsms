@@ -118,24 +118,40 @@ export default function Create({ tags, senderIds }) {
         }
 
         setGeneratingSpintax(true);
+
         try {
             const response = await axios.post(generateSpintax().url, {
                 message: data.message,
             });
-            const generated = response.data.spintax;
-            setData('spintax_message', response.data.spintax);
 
+            // Check if API returned an error
+            if (response.data.error) {
+                alert(response.data.error);
+                return;
+            }
+
+            const generated = response.data.spintax;
+            setData('spintax_message', generated);
+
+            // Count variations and generate samples
             const total = countVariations(generated);
             const sample = generateSamples(generated, 100);
 
-            setSpintaxOverview({total, sample});
+            setSpintaxOverview({ total, sample });
         } catch (error) {
             console.error('Failed to generate spintax:', error);
-            alert('Failed to generate spintax. Please try again.');
+
+            // Handle Axios/network errors more gracefully
+            if (error.response?.data?.error) {
+                alert(error.response.data.error);
+            } else {
+                alert('Failed to generate spintax. Please try again.');
+            }
         } finally {
             setGeneratingSpintax(false);
         }
     };
+
 
     // const handleGenerateSpintax = async () => {
     //     if (!data.message) {
