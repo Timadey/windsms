@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\ImportSubscribersJob;
 use App\Models\Subscriber;
 use App\Models\Tag;
+use App\Shared\Enums\FeaturesEnum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -51,6 +52,15 @@ class SubscriberController extends Controller
 
         $phoneNumbers = $validated['phone_number'];
         $tagIds = $validated['tag_ids'];
+        // validate that the user can upload this number of contacts
+        $user = $request->user();
+        $numberOfContacts = count($phoneNumbers);
+        if ($user->cantConsume(FeaturesEnum::sender->value, $numberOfContacts))
+        {
+            return redirect()->back('error', "You do not have enough credits to add this number of contacts.");
+        }
+
+        $user->consume(FeaturesEnum::sender->value, $numberOfContacts);
 
         if (count($phoneNumbers) > 1){
             foreach ($phoneNumbers as $phoneNumber) {
@@ -151,8 +161,16 @@ class SubscriberController extends Controller
                 ]);
             }
 
+            $user = $request->user();
+            if ($user->cantConsume(FeaturesEnum::sender->value, $totalRecords))
+            {
+                return redirect()->back('error', "You do not have enough credits to add this number of contacts.");
+            }
+
+            $user->consume(FeaturesEnum::sender->value, $totalRecords);
+
             // For large files (>500 records), process in background
-            if ($totalRecords > 5) {
+            if ($totalRecords > 500) {
                 // Store file temporarily
                 $filename = 'imports/' . uniqid() . '_' . $file->getClientOriginalName();
                 Storage::put($filename, file_get_contents($file->getRealPath()));

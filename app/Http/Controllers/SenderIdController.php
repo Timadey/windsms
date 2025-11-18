@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SenderId;
+use App\Shared\Enums\FeaturesEnum;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -39,6 +40,15 @@ class SenderIdController extends Controller
             'sender_id.regex' => 'Sender ID must contain only letters, numbers and decent spaces.',
             'sender_id.unique' => 'You have already applied for this sender ID.',
         ]);
+
+        // validate that the user can upload this number of senderID
+        $user = $request->user();
+        if ($user->cantConsume(FeaturesEnum::sender->value, 1))
+        {
+            return redirect()->back('error', "You do not have enough credits to add a sender ID.");
+        }
+
+        $user->consume(FeaturesEnum::sender->value, 1);
 
         SenderId::create([
             'user_id' => $request->user()->id,

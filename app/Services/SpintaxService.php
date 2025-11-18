@@ -126,28 +126,7 @@ class SpintaxService
             return $total;
         };
 
-        // // Recursive function to generate one random variation
-        // $generateRandomVariation = function ($text) use (&$generateRandomVariation) {
-        //     if (!preg_match('/\{([^{}]*)\}/', $text, $matches)) {
-        //         return $text;
-        //     }
-        //     $options = explode('|', $matches[1]);
-        //     $option = $options[array_rand($options)];
-        //     $newText = preg_replace('/\{([^{}]*)\}/', $option, $text, 1);
-        //     return $generateRandomVariation($newText);
-        // };
-        //
-        // // Generate unique random sample
-        // $sample = [];
-        // $attempts = 0;
-        // $maxAttempts = $sampleLimit * 5; // prevent infinite loop if variations < sampleLimit
-        // while (count($sample) < $sampleLimit && $attempts < $maxAttempts) {
-        //     $variation = $generateRandomVariation($spintax);
-        //     $sample[$variation] = $variation; // use keys to avoid duplicates
-        //     $attempts++;
-        // }
-        //
-        // $sample = array_values($sample);
+
         $total = $countVariations($spintax);
         logger()->info("total: $total");
 

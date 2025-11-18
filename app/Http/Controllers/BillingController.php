@@ -106,6 +106,17 @@ class BillingController extends Controller
             $user = auth()->user();
             $plan = Plan::findOrFail($request->plan_id);
             $extraUnits = $request->extra_sms_units ?? 0;
+            // if plan is the free plan and the user does not want extra unit, just subscribe them
+            if ($plan->name === 'free' && $extraUnits <= 0)
+            {
+                $metaData = [
+                    'plan_id' => $plan->id,
+                    'extra_sms_units' => $extraUnits,
+                ];
+                $this->paymentService->processNewSubscription($user, $metaData);
+                redirect()->route('billing.index')
+                    ->with('success', 'Subscription successful! Your FREE subscription has been activated.');
+            }
             // Initialize payment
             $result = $this->paymentService->initializeSubscriptionPayment(
                 $user,

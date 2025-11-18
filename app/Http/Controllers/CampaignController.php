@@ -8,6 +8,7 @@ use App\Models\SenderId;
 use App\Models\Subscriber;
 use App\Models\Tag;
 use App\Services\Ai\AiServiceManager;
+use App\Shared\Enums\FeaturesEnum;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
@@ -305,13 +306,26 @@ class CampaignController extends Controller
             'message' => 'required|string',
         ]);
 
-        $spintax = $aiService->generateSpintax($validated['message']);
-        $overview = $aiService->spintaxOverview($spintax, 100);
+        // check if user can consume ai mixture
+        $user = $request->user();
+        if ($user->cantConsume(FeaturesEnum::mixer->value, 1))
+        {
+            return response()->json(['error' => 'You do not have enough credits to use this feature.']);
+        }
 
+        $spintax = $aiService->generateSpintax($validated['message']);
+        // $overview = $aiService->spintaxOverview($spintax, 100);
+
+        // if spintax was generated
+        if (!empty($spintax)) {
+            // charge the user
+            $user->consume(FeaturesEnum::mixer->value, 1);
+        }
+        logger()->debug("Debug spintax: sending response now");
 
         return response()->json([
             'spintax' => $spintax,
-            'overview' => $overview,
+            // 'overview' => $overview,
         ]);
     }
 

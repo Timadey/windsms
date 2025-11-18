@@ -13,7 +13,9 @@ import axios from 'axios';
 import { dashboard } from '../../routes/index.ts';
 import { index as campaignIndex, generateSpintax, store as campaignStore } from '../../routes/campaigns/index.ts';
 import { create as senderIdCreate } from '../../routes/sender-ids/index.ts';
+// import { countVariations, generateSamples } from '../../lib/spintax.js';
 import AppLayout from '../../layouts/app-layout.jsx';
+import { countVariations, generateSamples } from '../../lib/spintax.js';
 
 export default function Create({ tags, senderIds }) {
     const [generatingSpintax, setGeneratingSpintax] = useState(false);
@@ -22,12 +24,15 @@ export default function Create({ tags, senderIds }) {
     const [recipientType, setRecipientType] = useState('tags');
     const [inputPhones, setInputPhones] = useState('');
     const [phoneState, setPhoneState] = useState({});
+    // const [overview, setOverview] = useState(null);
+    const [spintaxOverview, setSpintaxOverview] = useState(null);
+    const SAMPLE_LIMIT = 100;
 
     // SMS COUNTER — mirrors backend logic
     const [smsStats, setSmsStats] = useState({
         length: 0,
         smsUnits: 1,
-        totalUnits: 0
+        totalUnits: 0,
     });
 
     const computeSmsStats = (msg) => {
@@ -39,9 +44,9 @@ export default function Create({ tags, senderIds }) {
         // Determine recipient count
         let recipientCount = 0;
 
-        if (recipientType === "tags") {
+        if (recipientType === 'tags') {
             recipientCount = selectedTagsCount; // already computed in your code
-        } else if (recipientType === "manual") {
+        } else if (recipientType === 'manual') {
             recipientCount = phoneState.manualRecipientsCount || 0;
         }
 
@@ -50,7 +55,7 @@ export default function Create({ tags, senderIds }) {
         setSmsStats({
             length,
             smsUnits,
-            totalUnits
+            totalUnits,
         });
     };
 
@@ -59,7 +64,9 @@ export default function Create({ tags, senderIds }) {
         const now = new Date();
         const watOffset = 1 * 60; // WAT is UTC+1
         const localOffset = now.getTimezoneOffset();
-        const watTime = new Date(now.getTime() + (watOffset + localOffset) * 60000);
+        const watTime = new Date(
+            now.getTime() + (watOffset + localOffset) * 60000,
+        );
         const hour = watTime.getHours();
         return hour >= 8 && hour < 20; // 8am to 8pm (20:00)
     };
@@ -68,7 +75,9 @@ export default function Create({ tags, senderIds }) {
         const now = new Date();
         const watOffset = 1 * 60;
         const localOffset = now.getTimezoneOffset();
-        const watTime = new Date(now.getTime() + (watOffset + localOffset) * 60000);
+        const watTime = new Date(
+            now.getTime() + (watOffset + localOffset) * 60000,
+        );
         const hour = watTime.getHours();
 
         // If before 8am, schedule for 8:30am today
@@ -85,7 +94,6 @@ export default function Create({ tags, senderIds }) {
     };
 
     const [showTimeWarning] = useState(!isWithinAllowedHours());
-    const [spintaxOverview, setSpintaxOverview] = useState(null);
 
     const { data, setData, post, processing, errors } = useForm({
         name: '',
@@ -114,8 +122,13 @@ export default function Create({ tags, senderIds }) {
             const response = await axios.post(generateSpintax().url, {
                 message: data.message,
             });
+            const generated = response.data.spintax;
             setData('spintax_message', response.data.spintax);
-            setSpintaxOverview(response.data.overview);
+
+            const total = countVariations(generated);
+            const sample = generateSamples(generated, 100);
+
+            setSpintaxOverview({total, sample});
         } catch (error) {
             console.error('Failed to generate spintax:', error);
             alert('Failed to generate spintax. Please try again.');
@@ -123,6 +136,27 @@ export default function Create({ tags, senderIds }) {
             setGeneratingSpintax(false);
         }
     };
+
+    // const handleGenerateSpintax = async () => {
+    //     if (!data.message) {
+    //         alert('Please enter a message first');
+    //         return;
+    //     }
+    //
+    //     setGeneratingSpintax(true);
+    //     try {
+    //         const response = await axios.post(generateSpintax().url, {
+    //             message: data.message,
+    //         });
+    //         setData('spintax_message', response.data.spintax);
+    //         setSpintaxOverview(response.data.overview);
+    //     } catch (error) {
+    //         console.error('Failed to generate spintax:', error);
+    //         alert('Failed to generate spintax. Please try again.');
+    //     } finally {
+    //         setGeneratingSpintax(false);
+    //     }
+    // };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -146,8 +180,8 @@ export default function Create({ tags, senderIds }) {
         if (!phoneString.trim()) return [];
         return phoneString
             .split(',')
-            .map(num => num.trim())
-            .filter(num => num.length > 0);
+            .map((num) => num.trim())
+            .filter((num) => num.length > 0);
     };
 
     const handlePhoneChange = (e) => {
@@ -155,7 +189,8 @@ export default function Create({ tags, senderIds }) {
         const phoneNumbersList = parsePhoneNumbers(phoneNumbers);
         const uniquePhoneNumbers = [...new Set(phoneNumbersList)];
         const manualRecipientsCount = uniquePhoneNumbers.length;
-        const hasDuplicates = phoneNumbersList.length !== uniquePhoneNumbers.length;
+        const hasDuplicates =
+            phoneNumbersList.length !== uniquePhoneNumbers.length;
 
         setInputPhones(phoneNumbers);
         setData('phone_numbers', uniquePhoneNumbers);
@@ -286,16 +321,6 @@ export default function Create({ tags, senderIds }) {
                                             <strong>{smsStats.smsUnits}</strong>
                                         </span>
                                     </div>
-
-                                    {/*{(recipientType === 'tags' ||*/}
-                                    {/*    recipientType === 'manual') && (*/}
-                                    {/*    <span className="mt-1">*/}
-                                    {/*        Total SMS units required:{' '}*/}
-                                    {/*        <strong>*/}
-                                    {/*            {smsStats.totalUnits.toLocaleString()}*/}
-                                    {/*        </strong>*/}
-                                    {/*    </span>*/}
-                                    {/*)}*/}
                                 </div>
                                 {errors.message && (
                                     <p className="mt-1 text-sm text-red-500">
@@ -317,7 +342,7 @@ export default function Create({ tags, senderIds }) {
                                     <Wand2 className="mr-2 h-4 w-4" />
                                     {generatingSpintax
                                         ? 'Generating...'
-                                        : 'Generate Spintax with AI'}
+                                        : 'Generate Mixtures with AI'}
                                 </Button>
                                 <p className="mt-2 text-sm text-gray-500">
                                     Spintax creates message variations to make
@@ -337,10 +362,10 @@ export default function Create({ tags, senderIds }) {
 
                                     <div className="mb-4 rounded-md bg-white p-3">
                                         <p className="text-sm font-medium text-gray-700">
-                                            ✅ Total Variations:{' '}
+                                            We have{' '}
                                             <span className="text-lg font-bold text-green-600">
                                                 {spintaxOverview.total.toLocaleString()}
-                                            </span>
+                                            </span>{' '} mixtures available to be sent!
                                         </p>
                                         <p className="mt-1 text-sm text-gray-600">
                                             🎯 100% Deliverability | 🚫 Spam

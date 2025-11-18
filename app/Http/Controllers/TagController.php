@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tag;
+use App\Shared\Enums\FeaturesEnum;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -26,6 +27,14 @@ class TagController extends Controller
             'name' => 'required|string|max:255',
             'color' => 'nullable|string|max:7',
         ]);
+        // validate that the user can upload this number of tags
+        $user = $request->user();
+        if ($user->cantConsume(FeaturesEnum::tags->value, 1))
+        {
+            return redirect()->back('error', "You do not have enough credits to add a new tag.");
+        }
+
+        $user->consume(FeaturesEnum::tags->value, 1);
 
         Tag::create([
             'user_id' => $request->user()->id,

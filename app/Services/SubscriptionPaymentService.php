@@ -244,7 +244,7 @@ class SubscriptionPaymentService
     /**
      * Process new subscription
      */
-    protected function processNewSubscription(User $user, array $metadata): void
+    public function processNewSubscription(User $user, array $metadata): void
     {
         $plan = Plan::find($metadata['plan_id']);
         if (!$plan) {
