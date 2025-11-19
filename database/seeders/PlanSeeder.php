@@ -115,12 +115,12 @@ class PlanSeeder extends Seeder
 
         $free->features()->attach($contacts, ['charges' => 300000 ]);
         // $freeYearly->features()->attach($contacts, ['charges' => 5000 ]);
-        $pro->features()->attach($contacts, ['charges' => 1000000 ]);
-        $proYearly->features()->attach($contacts, ['charges' => 300000 ]);
-        $business->features()->attach($contacts, ['charges' => 2000000 ]);
-        $businessYearly->features()->attach($contacts, ['charges' => 2000000 ]);
-        $enterprise->features()->attach($contacts, ['charges' => 200000000 ]);
-        $enterpriseYearly->features()->attach($contacts, ['charges' => 200000000 ]);
+        $pro->features()->attach($contacts, ['charges' => 700000 ]);
+        $proYearly->features()->attach($contacts, ['charges' => 700000 ]);
+        $business->features()->attach($contacts, ['charges' => 900000 ]);
+        $businessYearly->features()->attach($contacts, ['charges' => 900000 ]);
+        $enterprise->features()->attach($contacts, ['charges' => 990000 ]);
+        $enterpriseYearly->features()->attach($contacts, ['charges' => 990000 ]);
 
         $senderId = Feature::create([
             'consumable' => true,
