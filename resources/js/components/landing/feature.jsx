@@ -86,7 +86,7 @@ const features = [
             '99.99% Uptime SLA',
             'Real-time Webhooks',
         ],
-        image: '/screens/developer.png',
+        image: '/screens/developer1.png',
     },
 ];
 
