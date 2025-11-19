@@ -57,7 +57,7 @@ class SubscriberController extends Controller
         $numberOfContacts = count($phoneNumbers);
         if ($user->cantConsume(FeaturesEnum::sender->value, $numberOfContacts))
         {
-            return redirect()->back('error', "You do not have enough credits to add this number of contacts.");
+            return back()->with('error', "You do not have enough credits to add this number of contacts.");
         }
 
         $user->consume(FeaturesEnum::sender->value, $numberOfContacts);
@@ -164,7 +164,7 @@ class SubscriberController extends Controller
             $user = $request->user();
             if ($user->cantConsume(FeaturesEnum::sender->value, $totalRecords))
             {
-                return redirect()->back('error', "You do not have enough credits to add this number of contacts.");
+                return back()->with('error', "You do not have enough credits to add this number of contacts.");
             }
 
             $user->consume(FeaturesEnum::sender->value, $totalRecords);
