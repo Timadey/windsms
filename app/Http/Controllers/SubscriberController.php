@@ -162,12 +162,12 @@ class SubscriberController extends Controller
             }
 
             $user = $request->user();
-            if ($user->cantConsume(FeaturesEnum::sender->value, $totalRecords))
+            if ($user->cantConsume(FeaturesEnum::contacts->value, $totalRecords))
             {
                 return back()->with('error', "You do not have enough credits to add this number of contacts.");
             }
 
-            $user->consume(FeaturesEnum::sender->value, $totalRecords);
+            $user->consume(FeaturesEnum::contacts->value, $totalRecords);
 
             // For large files (>500 records), process in background
             if ($totalRecords > 500) {
