@@ -55,12 +55,12 @@ class SubscriberController extends Controller
         // validate that the user can upload this number of contacts
         $user = $request->user();
         $numberOfContacts = count($phoneNumbers);
-        if ($user->cantConsume(FeaturesEnum::sender->value, $numberOfContacts))
+        if ($user->cantConsume(FeaturesEnum::contacts->value, $numberOfContacts))
         {
             return back()->with('error', "You do not have enough credits to add this number of contacts.");
         }
 
-        $user->consume(FeaturesEnum::sender->value, $numberOfContacts);
+        $user->consume(FeaturesEnum::contacts->value, $numberOfContacts);
 
         if (count($phoneNumbers) > 1){
             foreach ($phoneNumbers as $phoneNumber) {
