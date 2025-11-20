@@ -29,9 +29,15 @@ class ProcessRecurringCampaigns extends Command
     {
         $this->info('Processing scheduled recurring campaigns...');
 
-        // Find campaigns that are scheduled and their dispatch time has arrived
-        $campaigns = Campaign::where('status', 'scheduled')
-            ->where('dispatch_at', '<=', now())
+        $campaigns = Campaign::where(function ($q) {
+            $q->where('status', 'scheduled')
+                ->where('dispatch_at', '<=', now());
+        })
+            ->orWhere(function ($q) {
+                $q->where('status', 'processing')
+                    ->where('dispatch_at', '<=', now())
+                    ->whereDoesntHave('campaignLogs');
+            })
             ->get();
 
         if ($campaigns->isEmpty()) {
@@ -42,7 +48,7 @@ class ProcessRecurringCampaigns extends Command
         $count = 0;
         foreach ($campaigns as $campaign) {
             $this->info("Dispatching campaign: {$campaign->name} (ID: {$campaign->id})");
-            
+
             $campaign->update(['status' => 'processing']);
             SendCampaignSms::dispatch($campaign);
             $count++;

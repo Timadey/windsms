@@ -284,7 +284,7 @@ export default function Create({ tags, senderIds }) {
                                         ))
                                     ) : (
                                         <option disabled>
-                                            No approved sender IDs
+                                            Default sender ID will be used if empty
                                         </option>
                                     )}
                                 </select>
