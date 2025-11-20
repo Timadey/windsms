@@ -50,7 +50,7 @@ class CampaignController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'message' => 'required|string|max:150',
+            'message' => 'required|string|max:160',
             'spintax_message' => 'nullable|string',
             'sender_id' => ['nullable', Rule::exists('sender_ids')->where(function (Builder $query) use($request) {
                 $query->where('user_id', $request->user()->id);
