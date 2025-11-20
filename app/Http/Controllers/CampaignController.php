@@ -130,7 +130,7 @@ class CampaignController extends Controller
             'user_id' => $request->user()->id,
             'name' => $validated['name'],
             'message' => $validated['message'],
-            'sender_id' => $validated['sender_id'] ?? 'BROADCAST',
+            'sender_id' => $validated['sender_id'] ?? 'Windnotes',
             'spintax_message' => $validated['spintax_message'] ?? $validated['message'],
             'recipient_type' => $validated['recipient_type'],
             'tag_ids' => $validated['recipient_type'] === 'tags' ? $validated['tag_ids'] : null,

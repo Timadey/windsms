@@ -56,7 +56,7 @@ class RetryPendingSmsJob implements ShouldQueue
                 $result = $smsService->send(
                     phoneNumbers: [$log->phone_number],
                     message: $log->message_sent,
-                    senderId: $log->campaign->sender_id ?? config('services.mtn_bulksms.default_sender_id', 'BROADCAST')
+                    senderId: $log->campaign->sender_id ?? config('services.mtn_bulksms.default_sender_id', 'Windnotes')
                 );
 
                 if ($result && isset($result['success']) && $result['success']) {
