@@ -73,7 +73,7 @@ class SendCampaignSms implements ShouldQueue
                 $result = $smsService->send(
                     phoneNumbers: [$recipient['phone_number']],
                     message: $personalizedMessage,
-                    senderId: $this->campaign->sender_id ?? config('services.mtn_bulksms.default_sender_id', 'Windsms')
+                    senderId: $this->campaign->sender_id ?? config('services.mtn_bulksms.default_sender_id', 'BROADCAST')
                 );
 
                 if ($result && isset($result['success']) && $result['success']) {
