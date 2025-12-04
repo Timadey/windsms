@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTagRequest;
+use App\Http\Requests\UpdateTagRequest;
 use App\Models\Tag;
-use App\Shared\Enums\FeaturesEnum;
+use App\Services\TagService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TagController extends Controller
 {
+    public function __construct(
+        protected TagService $tagService
+    ) {}
+
     public function index(Request $request)
     {
         $tags = Tag::where('user_id', $request->user()->id)
@@ -21,42 +27,23 @@ class TagController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreTagRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'color' => 'nullable|string|max:7',
-        ]);
-        // validate that the user can upload this number of tags
-        $user = $request->user();
-        if ($user->cantConsume(FeaturesEnum::tags->value, 1))
-        {
-            return back()->with('error', "You do not have enough credits to add a new tag.");
+        try {
+            $this->tagService->createTag($request->validated(), $request->user());
+            return redirect()->back()->with('success', 'Tag created successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $user->consume(FeaturesEnum::tags->value, 1);
-
-        Tag::create([
-            'user_id' => $request->user()->id,
-            'name' => $validated['name'],
-            'color' => $validated['color'] ?? '#3b82f6',
-        ]);
-
-        return redirect()->back()->with('success', 'Tag created successfully.');
     }
 
-    public function update(Request $request, Tag $tag)
+    public function update(UpdateTagRequest $request, Tag $tag)
     {
         if ($tag->user_id !== $request->user()->id) {
             abort(403);
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'color' => 'nullable|string|max:7',
-        ]);
-
-        $tag->update($validated);
+        $this->tagService->updateTag($tag, $request->validated());
 
         return redirect()->back()->with('success', 'Tag updated successfully.');
     }
@@ -67,7 +54,7 @@ class TagController extends Controller
             abort(403);
         }
 
-        $tag->delete();
+        $this->tagService->deleteTag($tag);
 
         return redirect()->back()->with('success', 'Tag deleted successfully.');
     }

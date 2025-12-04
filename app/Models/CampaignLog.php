@@ -10,6 +10,7 @@ class CampaignLog extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'user_id',
         'campaign_id',
         'subscriber_id',
         'phone_number', // New field
@@ -17,7 +18,6 @@ class CampaignLog extends Model
         'status',
         'error_message',
         'sent_at',
-        'response_data',
         'retry_count',
         'next_retry_at',
     ];
@@ -25,7 +25,6 @@ class CampaignLog extends Model
     protected $casts = [
         'sent_at' => 'datetime',
         'next_retry_at' => 'datetime',
-        'response_data' => 'array',
     ];
 
     public function scopePending($query)
@@ -46,6 +45,11 @@ class CampaignLog extends Model
     {
         return $query->where('status', 'pending')
             ->where('retry_count', '<', $maxRetries);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function campaign(): BelongsTo

@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+
 class HandleInertiaRequests extends Middleware
 {
     /**
@@ -54,6 +55,7 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
+                'isAdmin' => $request->user() && in_array($request->user()->email, config('app.admin_emails', [])),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [

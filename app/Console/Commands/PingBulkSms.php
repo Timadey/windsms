@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Sms\Providers\MtnSmsProvider;
 use Illuminate\Console\Command;
 use App\Services\Sms\SmsService;
 
@@ -12,7 +13,7 @@ class PingBulkSms extends Command
 
     public function handle()
     {
-        $smsService = app(SmsService::class);
+        $smsService = app(MtnSmsProvider::class);
 
         $response = $smsService->pingSession();
 

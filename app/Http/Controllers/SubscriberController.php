@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\ImportSubscribersJob;
+use App\Http\Requests\BulkImportSubscribersRequest;
+use App\Http\Requests\StoreSubscriberRequest;
+use App\Http\Requests\UpdateSubscriberRequest;
 use App\Models\Subscriber;
 use App\Models\Tag;
-use App\Shared\Enums\FeaturesEnum;
+use App\Services\SubscriberService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-use League\Csv\Reader;
 
 class SubscriberController extends Controller
 {
+    public function __construct(
+        protected SubscriberService $subscriberService
+    ) {}
+
     public function index(Request $request)
     {
         $subscribers = Subscriber::where('user_id', $request->user()->id)
@@ -40,76 +44,34 @@ class SubscriberController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreSubscriberRequest $request)
     {
-        $validated = $request->validate([
-            'phone_number' => 'required|array',
-            'phone_number.*' => 'required|min:11|max:11|string|distinct',
-            'name' => 'nullable|string|max:255',
-            'tag_ids' => 'nullable|array',
-            'tag_ids.*' => 'exists:tags,id',
-        ]);
+        try {
+            $this->subscriberService->createSubscribers(
+                $request->validated()['phone_number'],
+                $request->user(),
+                $request->validated()['name'] ?? null,
+                $request->validated()['tag_ids'] ?? null
+            );
 
-        $phoneNumbers = $validated['phone_number'];
-        $tagIds = $validated['tag_ids'];
-        // validate that the user can upload this number of contacts
-        $user = $request->user();
-        $numberOfContacts = count($phoneNumbers);
-        if ($user->cantConsume(FeaturesEnum::contacts->value, $numberOfContacts))
-        {
-            return back()->with('error', "You do not have enough credits to add this number of contacts.");
+            return redirect()->back()->with('success', 'Subscriber added successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $user->consume(FeaturesEnum::contacts->value, $numberOfContacts);
-
-        if (count($phoneNumbers) > 1){
-            foreach ($phoneNumbers as $phoneNumber) {
-                $formatedPhoneNumber = formatPhoneNumber($phoneNumber);
-                // if length is not 10, continue
-                if (strlen($formatedPhoneNumber) != 11) continue;
-                $subscriber = Subscriber::updateOrCreate(['phone_number' => $formatedPhoneNumber, 'user_id' => $request->user()->id]);
-                if (!empty($tagIds)) {
-                    $subscriber->tags()->sync($tagIds, false);
-                }
-            }
-        }else{
-            $phone = $phoneNumbers[0];
-            $subscriber = Subscriber::updateOrCreate([
-                'user_id' => $request->user()->id,
-                'phone_number' => formatPhoneNumber($phone)
-            ], [
-                'name' => $validated['name'] ?? null
-            ]);
-            if (!empty($validated['tag_ids'])) {
-                $subscriber->tags()->sync($validated['tag_ids'], false);
-            }
-        }
-        return redirect()->back()->with('success', 'Subscriber added successfully.');
     }
 
-    public function update(Request $request, Subscriber $subscriber)
+    public function update(UpdateSubscriberRequest $request, Subscriber $subscriber)
     {
         if ($subscriber->user_id !== $request->user()->id) {
             abort(403);
         }
 
-        $validated = $request->validate([
-            'phone_number' => 'required|string',
-            'name' => 'nullable|string|max:255',
-            'tag_ids' => 'nullable|array',
-            'tag_ids.*' => 'exists:tags,id',
-        ]);
-
-        $subscriber->update([
-            'phone_number' => formatPhoneNumber($validated['phone_number']),
-            'name' => $validated['name'] ?? null,
-        ]);
-
-        if (isset($validated['tag_ids'])) {
-            $subscriber->tags()->sync($validated['tag_ids']);
+        try {
+            $this->subscriberService->updateSubscriber($subscriber, $request->validated());
+            return redirect()->back()->with('success', 'Subscriber updated successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        return redirect()->back()->with('success', 'Subscriber updated successfully.');
     }
 
     public function destroy(Request $request, Subscriber $subscriber)
@@ -118,129 +80,37 @@ class SubscriberController extends Controller
             abort(403);
         }
 
-        $subscriber->delete();
+        $this->subscriberService->deleteSubscriber($subscriber);
 
         return redirect()->back()->with('success', 'Subscriber deleted successfully.');
     }
 
-    public function bulkImport(Request $request)
+    public function bulkImport(BulkImportSubscribersRequest $request)
     {
-        $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:10240', // 10MB max
-            'tag_ids' => 'nullable|array',
-            'tag_ids.*' => 'exists:tags,id',
-        ]);
-
-        $file = $request->file('file');
-
         try {
-            // Read and validate CSV
-            $csv = Reader::createFromPath($file->getRealPath(), 'r');
-            $csv->setHeaderOffset(0);
+            $result = $this->subscriberService->bulkImport(
+                $request->file('file'),
+                $request->user(),
+                $request->validated()['tag_ids'] ?? null
+            );
 
-            // Get headers
-            $headers = $csv->getHeader();
-
-            // Validate that required column exists
-            $hasPhoneNumber = in_array('phone_number', $headers);
-            $hasPhone = in_array('phone', $headers);
-
-            if (!$hasPhoneNumber && !$hasPhone) {
-                return redirect()->back()->withErrors([
-                    'file' => 'CSV file must contain either "phone_number" or "phone" column header.'
-                ]);
+            if ($result['background']) {
+                return redirect()->back()->with('success', $result['message']);
             }
 
-            // Count records
-            $records = iterator_to_array($csv->getRecords());
-            $totalRecords = count($records);
-
-            if ($totalRecords === 0) {
-                return redirect()->back()->withErrors([
-                    'file' => 'CSV file is empty or contains no valid records.'
-                ]);
+            $message = "{$result['imported']} subscribers imported successfully.";
+            if ($result['skipped'] > 0) {
+                $message .= " {$result['skipped']} rows skipped (empty phone numbers).";
             }
-
-            $user = $request->user();
-            if ($user->cantConsume(FeaturesEnum::contacts->value, $totalRecords))
-            {
-                return back()->with('error', "You do not have enough credits to add this number of contacts.");
-            }
-
-            $user->consume(FeaturesEnum::contacts->value, $totalRecords);
-
-            // For large files (>500 records), process in background
-            if ($totalRecords > 500) {
-                // Store file temporarily
-                $filename = 'imports/' . uniqid() . '_' . $file->getClientOriginalName();
-                Storage::put($filename, file_get_contents($file->getRealPath()));
-
-                // Dispatch job
-                ImportSubscribersJob::dispatch(
-                    $request->user()->id,
-                    $filename,
-                    $request->tag_ids ?? []
-                );
-
-                return redirect()->back()->with('success',
-                    "Your import of {$totalRecords} subscribers has been queued and will be processed in the background. You'll receive a notification when it's complete."
-                );
-            }
-
-            // For smaller files, process immediately
-            $imported = 0;
-            $skipped = 0;
-            $errors = [];
-
-            foreach ($records as $index => $record) {
-                try {
-                    // Get phone number from either column
-                    $phoneNumber = $record['phone_number'] ?? $record['phone'] ?? null;
-
-                    if (empty($phoneNumber)) {
-                        $skipped++;
-                        continue;
-                    }
-
-                    // Clean phone number (remove spaces, dashes, etc.)
-                    $phoneNumber = formatPhoneNumber($phoneNumber);
-
-                    if (empty($phoneNumber)) {
-                        $skipped++;
-                        continue;
-                    }
-
-                    $subscriber = Subscriber::firstOrCreate(
-                        [
-                            'user_id' => $request->user()->id,
-                            'phone_number' => $phoneNumber,
-                        ]
-                    );
-
-                    if (!empty($request->tag_ids)) {
-                        $subscriber->tags()->syncWithoutDetaching($request->tag_ids);
-                    }
-
-                    $imported++;
-                } catch (\Exception $e) {
-                    $errors[] = "Row " . ($index + 2) . ": " . $e->getMessage();
-                }
-            }
-
-            $message = "{$imported} subscribers imported successfully.";
-            if ($skipped > 0) {
-                $message .= " {$skipped} rows skipped (empty phone numbers).";
-            }
-            if (!empty($errors) && count($errors) <= 10) {
-                $message .= " Errors: " . implode(', ', $errors);
-            } elseif (!empty($errors)) {
-                $message .= " " . count($errors) . " errors occurred.";
+            if (!empty($result['errors']) && count($result['errors']) <= 10) {
+                $message .= " Errors: " . implode(', ', $result['errors']);
+            } elseif (!empty($result['errors'])) {
+                $message .= " " . count($result['errors']) . " errors occurred.";
             }
 
             return redirect()->back()->with('success', $message);
-
         } catch (\Exception $e) {
-            return redirect()->back()->with('error','Error processing CSV file: ' . $e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 }

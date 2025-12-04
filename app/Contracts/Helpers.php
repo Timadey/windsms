@@ -76,3 +76,14 @@ if (!function_exists('formatPhoneNumber')) {
         }
     }
 }
+
+if (!function_exists('determineNumberOfSms'))
+{
+    function determineNumberOfSms(int $recipientCount, string $message): float|int
+    {
+        // get the count of sms unit required
+        $messageCount = mb_strlen($message) / 160;
+        $smsUnitRequired = max(ceil($messageCount), 1);
+        return $smsUnitRequired * $recipientCount;
+    }
+}

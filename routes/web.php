@@ -61,6 +61,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('campaigns/{campaign}', [CampaignController::class, 'show'])->name('campaigns.show');
     Route::post('campaigns/generate-spintax', [CampaignController::class, 'generateSpintax'])->name('campaigns.generate-spintax');
 
+    // Single SMS
+    Route::get('single-sms', [\App\Http\Controllers\SingleSmsController::class, 'index'])->name('single-sms.index');
+    Route::get('single-sms/create', [\App\Http\Controllers\SingleSmsController::class, 'create'])->name('single-sms.create');
+    Route::post('single-sms', [\App\Http\Controllers\SingleSmsController::class, 'store'])->name('single-sms.store');
+    Route::get('single-sms/search-subscribers', [\App\Http\Controllers\SingleSmsController::class, 'searchSubscribers'])->name('single-sms.search-subscribers');
+
     // Billing dashboard
     Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
     // Subscribe to a plan
@@ -86,6 +92,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('sender-ids/{senderId}/approve', [AdminSenderIdController::class, 'approve'])->name('admin.sender-ids.approve');
         Route::post('sender-ids/{senderId}/reject', [AdminSenderIdController::class, 'reject'])->name('admin.sender-ids.reject');
         Route::delete('sender-ids/{senderId}', [AdminSenderIdController::class, 'destroy'])->name('admin.sender-ids.destroy');
+        
+        // Settings
+        Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
+        Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('admin.settings.update');
     });
 });
 

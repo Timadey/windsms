@@ -70,8 +70,8 @@ class SendCampaignSms implements ShouldQueue
                 : $messageVariation;
 
             try {
-                $result = $smsService->send(
-                    phoneNumbers: [$recipient['phone_number']],
+                $result = $smsService->composeSms(
+                    msisdns: [$recipient['phone_number']],
                     message: $personalizedMessage,
                     senderId: $this->campaign->sender_id ?? config('services.mtn_bulksms.default_sender_id', 'Windnotes')
                 );

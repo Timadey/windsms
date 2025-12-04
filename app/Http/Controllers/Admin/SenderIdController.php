@@ -3,12 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RejectSenderIdRequest;
 use App\Models\SenderId;
+use App\Services\SenderIdService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SenderIdController extends Controller
 {
+    public function __construct(
+        private SenderIdService $senderIdService
+    ) {}
+
     public function index(Request $request)
     {
         $status = $request->query('status', 'all');
@@ -29,19 +35,18 @@ class SenderIdController extends Controller
 
     public function approve(SenderId $senderId)
     {
-        $senderId->approve();
+        $this->senderIdService->approveSenderId($senderId);
 
         return redirect()->back()
             ->with('success', "Sender ID '{$senderId->sender_id}' has been approved.");
     }
 
-    public function reject(Request $request, SenderId $senderId)
+    public function reject(RejectSenderIdRequest $request, SenderId $senderId)
     {
-        $validated = $request->validate([
-            'reason' => 'required|string|max:500',
-        ]);
-
-        $senderId->reject($validated['reason']);
+        $this->senderIdService->rejectSenderId(
+            $senderId,
+            $request->validated()['reason']
+        );
 
         return redirect()->back()
             ->with('success', "Sender ID '{$senderId->sender_id}' has been rejected.");

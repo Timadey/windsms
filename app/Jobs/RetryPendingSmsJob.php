@@ -53,8 +53,8 @@ class RetryPendingSmsJob implements ShouldQueue
                 }
 
                 // Attempt to send SMS
-                $result = $smsService->send(
-                    phoneNumbers: [$log->phone_number],
+                $result = $smsService->composeSms(
+                    msisdns: [$log->phone_number],
                     message: $log->message_sent,
                     senderId: $log->campaign->sender_id ?? config('services.mtn_bulksms.default_sender_id', 'Windnotes')
                 );

@@ -9,31 +9,41 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { index as campaignsIndex } from '@/routes/campaigns';
 import { index as subscribersIndex } from '@/routes/subscribers';
 import { index as tagsIndex } from '@/routes/tags';
 import { index as SenderIdIndex } from '@/routes/sender-ids';
+import { index as singleSmsIndex } from '@/routes/single-sms';
 import {
-    BookOpen,
-    Folder,
+    Send,
     LayoutGrid,
     Megaphone,
     Users,
     Tag,
     IdCard,
     Coins,
+    Settings,
+    ShieldCheck,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 import billing from '../routes/billing/index.ts';
+import admin from '../routes/admin/index.ts';
+// import { admin } from '../routes/admin/index.ts';
 
 const mainNavItems = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Compose SMS',
+        href: singleSmsIndex(),
+        icon: Send,
     },
     {
         title: 'Campaigns',
@@ -62,6 +72,19 @@ const mainNavItems = [
     },
 ];
 
+const adminNavItems = [
+    {
+        title: 'Admin Settings',
+        href: admin.settings.index().url,
+        icon: Settings,
+    },
+    {
+        title: 'Sender ID Approvals',
+        href: admin.senderIds.index().url,
+        icon: ShieldCheck,
+    },
+];
+
 const footerNavItems = [
     // {
     //     title: 'Repository',
@@ -76,6 +99,9 @@ const footerNavItems = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage().props;
+    const isAdmin = auth?.isAdmin;
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -92,6 +118,12 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+                {isAdmin && (
+                    <>
+                        <SidebarSeparator className="mx-0" />
+                        <NavMain items={adminNavItems} />
+                    </>
+                )}
             </SidebarContent>
 
             <SidebarFooter>
