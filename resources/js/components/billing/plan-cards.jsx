@@ -21,6 +21,9 @@ export function PlanCards({
         return base.charAt(0).toUpperCase() + base.slice(1);
     };
 
+    // Define plan hierarchy (order from lowest to highest)
+    const planHierarchy = ['free', 'pro', 'business', 'enterprise'];
+
     const getPlanDetails = (plan) => {
         const smsFeature = plan.features.find((f) => f.name === 'sms-units');
         const smsUnits = smsFeature ? smsFeature.charges : 0;
@@ -42,6 +45,25 @@ export function PlanCards({
             sms: smsUnits,
             popular: baseName === 'business', // highlight pro plan by default
         };
+    };
+
+    // Helper function to determine if a plan is an upgrade or downgrade
+    const getPlanRelation = (plan) => {
+        if (!currentSubscription) return 'upgrade'; // No subscription, all plans are upgrades
+
+        const currentBaseName = currentSubscription.plan.name
+            .replace('-yearly', '')
+            .replace('-monthly', '');
+        const planBaseName = plan.name
+            .replace('-yearly', '')
+            .replace('-monthly', '');
+
+        const currentIndex = planHierarchy.indexOf(currentBaseName);
+        const planIndex = planHierarchy.indexOf(planBaseName);
+
+        if (planIndex > currentIndex) return 'upgrade';
+        if (planIndex < currentIndex) return 'downgrade';
+        return 'current';
     };
 
     return (
@@ -72,15 +94,15 @@ export function PlanCards({
                 {plans.map((plan) => {
                     const details = getPlanDetails(plan);
                     const isCurrent = currentSubscription?.plan.name === plan.name;
+                    const planRelation = getPlanRelation(plan);
 
                     return (
                         <Card
                             key={plan.id}
-                            className={`relative transition hover:shadow-md ${
-                                details.popular
+                            className={`relative transition hover:shadow-md ${details.popular
                                     ? 'border-blue-500 shadow-lg'
                                     : ''
-                            } ${isCurrent ? 'border-green-500' : ''}`}
+                                } ${isCurrent ? 'border-green-500' : ''}`}
                         >
                             {details.popular && !isCurrent && (
                                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white">
@@ -142,13 +164,17 @@ export function PlanCards({
                                         isCurrent
                                             ? 'outline'
                                             : details.popular
-                                              ? 'default'
-                                              : 'outline'
+                                                ? 'default'
+                                                : 'outline'
                                     }
                                     onClick={() => onSelectPlan(plan)}
                                     disabled={isCurrent}
                                 >
-                                    {isCurrent ? 'Current Plan' : 'Subscribe'}
+                                    {isCurrent
+                                        ? 'Current Plan'
+                                        : planRelation === 'upgrade'
+                                            ? 'Upgrade'
+                                            : 'Downgrade'}
                                 </Button>
                             </CardContent>
                         </Card>
